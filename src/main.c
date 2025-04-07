@@ -1,5 +1,15 @@
 #include <stdlib.h>
 #include "stm32f0xx.h"
+#include <stdint.h>
+#include <stdio.h>
+#include "tty.h"
+#include "fifo.h"
+#include "commands.h"
+
+
+#define FIFOSIZE 16
+char serfifo[FIFOSIZE];
+int seroffset = 0;
 
 extern void internal_clock();
 
@@ -47,17 +57,6 @@ void init_sd_dma_RX() {
     DMA1_Channel4 -> CCR &= ~(0x1);
 }
 
-int main() {
-    internal_clock();
-
-    int x = 4;
-    int y = 5;
-
-    int z = x + y;
-
-    return EXIT_SUCCESS;
-}
-
 void init_spi1_slow(void) {    
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
     RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
@@ -90,6 +89,80 @@ void init_spi1_slow(void) {
     init_spi1_slow();
     sdcard_io_high_speed();
  }
+
+ void init_usart5() {
+    RCC->AHBENR |= RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIODEN;
+    GPIOC->MODER &= ~(3U << (12 * 2));
+    GPIOC->MODER |= (2U << (12 * 2));
+    GPIOC->AFR[1] |= (2U << ((12 - 8) * 4));
+    GPIOD->MODER &= ~(3U << (2 * 2));
+    GPIOD->MODER |= (2U << (2 * 2));
+    GPIOD->AFR[0] |= (2U << (2 * 4));
+    RCC->APB1ENR |= RCC_APB1ENR_USART5EN;
+    USART5->CR1 &= ~USART_CR1_UE;
+    USART5->CR1 &= ~USART_CR1_M;
+    USART5->CR2 &= ~USART_CR2_STOP;
+    USART5->CR1 &= ~USART_CR1_PCE;
+    USART5->CR1 &= ~USART_CR1_OVER8;
+    USART5->BRR = 48000000 / 115200;
+    USART5->CR1 |= USART_CR1_TE | USART_CR1_RE;
+    USART5->CR1 |= USART_CR1_UE;
+    while (!(USART5->ISR & USART_ISR_TEACK)) {}
+    while (!(USART5->ISR & USART_ISR_REACK)) {}
+}
+
+void enable_tty_interrupt(void) {
+    USART5->CR1 |= USART_CR1_RXNEIE;
+    USART5->CR3 |= USART_CR3_DMAR;
+    NVIC_EnableIRQ(USART3_8_IRQn);
+    RCC->AHBENR |= RCC_AHBENR_DMA2EN;
+    DMA2->CSELR |= DMA2_CSELR_CH2_USART5_RX;
+    DMA2_Channel2->CCR &= ~DMA_CCR_EN;
+    DMA2_Channel2->CMAR = (uint32_t)serfifo;
+    DMA2_Channel2->CPAR = (uint32_t)&USART5->RDR; 
+    DMA2_Channel2->CNDTR = FIFOSIZE;
+    DMA2_Channel2->CCR &= ~DMA_CCR_DIR;
+    DMA2_Channel2->CCR |= DMA_CCR_MINC;
+    DMA2_Channel2->CCR &= ~DMA_CCR_PINC;
+    DMA2_Channel2->CCR &= ~(DMA_CCR_MSIZE | DMA_CCR_PSIZE);
+    DMA2_Channel2->CCR |= DMA_CCR_CIRC;
+    DMA2_Channel2->CCR &= ~DMA_CCR_MEM2MEM;
+    DMA2_Channel2->CCR |= DMA_CCR_PL;
+    DMA2_Channel2->CCR |= DMA_CCR_EN;
+}
+
+char interrupt_getchar() {
+    // USART_TypeDef *u = USART5;
+    while(fifo_newline(&input_fifo) == 0) {
+        asm volatile ("wfi");
+    }
+    char ch = fifo_remove(&input_fifo);
+    return ch;
+}
+
+int __io_putchar(int c) {
+    if (c == '\n') {
+        while (!(USART5->ISR & USART_ISR_TXE));
+        USART5->TDR = '\r';
+    }
+
+    while(!(USART5->ISR & USART_ISR_TXE));
+    USART5->TDR = c;
+    return c;
+}
+
+int __io_getchar(void) {
+    return interrupt_getchar();
+}
+
+void USART3_8_IRQHandler(void) {
+    while (DMA2_Channel2->CNDTR != sizeof(serfifo) - seroffset) {
+        if (!fifo_full(&input_fifo)) {
+            insert_echo_char(serfifo[seroffset]);
+        }
+        seroffset = (seroffset + 1) % sizeof(serfifo);
+    }
+}
 
  // NOTES FOR THE TFT DISPLAY:
 
@@ -126,4 +199,14 @@ void init_spi1_slow(void) {
 // drawline 0 256 240 256 2
 // drawline 0 288 240 288 2
 
- 
+int main() {
+    internal_clock();
+    init_usart5();
+    enable_tty_interrupt();
+    setbuf(stdin,0);
+    setbuf(stdout,0);
+    setbuf(stderr,0);
+    command_shell();
+    init_lcd_spi();
+    
+}
