@@ -7,8 +7,14 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "lcd.h"
+#include <string.h>
+#include <stdlib.h>
 
-//void nano_wait(int t);
+void nano_wait(unsigned int n) {
+    asm(    "        mov r0,%0\n"
+            "repeat: sub r0,#83\n"
+            "        bgt repeat\n" : : "r"(n) : "r0", "cc");
+}
 
 lcd_dev_t lcddev;
 
@@ -71,9 +77,9 @@ static void tft_reg_select(int val)
 void LCD_Reset(void)
 {
     lcddev.reset(1);      // Assert reset
-    //nano_wait(100000000); // Wait
+    nano_wait(100000000); // Wait
     lcddev.reset(0);      // De-assert reset
-    //nano_wait(50000000);  // Wait
+    nano_wait(50000000);  // Wait
 }
 
 // If you want to try the slower version of SPI, #define SLOW_SPI
@@ -329,7 +335,7 @@ void LCD_Init(void (*reset)(int), void (*select)(int), void (*reg_select)(int))
     LCD_WR_DATA(0x00);
     LCD_WR_DATA(0xef);
     LCD_WR_REG(0x11);     // Exit Sleep
-    //nano_wait(120000000); // Wait 120 ms
+    nano_wait(120000000); // Wait 120 ms
     LCD_WR_REG(0x29);     // Display on
 
     LCD_direction(USE_HORIZONTAL);
