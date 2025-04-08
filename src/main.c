@@ -13,15 +13,19 @@ void init_spi_sd() {
     // 15 mosi
 
     GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
+    GPIOB -> MODER |= 0x1 << 4; // PB2 set to output for turning the SD card on / off
     
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
 
-    SPI2 -> CR1 |= 0x7 << 3; // baud rate at slowest
-    SPI2 -> CR2 |= 0x7 << 8; // sets data to 8 bits
+    SPI2 -> CR1 |= 0x7 << 3; // baud rate at slowest (sclk speed set to 187.5 KHz) 
+    SPI2 -> CR2 |= 0x7 << 8; // sets data to 8 bits (1 byte per transaction)
 
-    SPI2 -> CR1 |= SPI_CR1_MSTR;
-    SPI2 -> CR2 |= SPI_CR2_SSOE;
-    SPI2 -> CR2 |= SPI_CR2_NSSP;
+    SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
+    SPI2 -> CR2 |= SPI_CR2_SSOE; // SS output enabled, multimaster not allowed
+    // SPI2 -> CR2 |= SPI_CR2_NSSP; // NSS pulse management, allows our spi to generate the nss
+    SPI2 -> CR1 |= SPI_CR1_SSM; // enables software slave management (SSI bit determines NSS)
+    SPI2 -> CR1 |= SPI_CR1_SSI;
+    SPI2 -> CR2 |= SPI_CR2_FRXTH;
 
     // will use DMA for transfers
     // SPI2 -> CR2 |= SPI_CR2_TXDMAEN;
@@ -30,22 +34,22 @@ void init_spi_sd() {
     SPI2 -> CR1 |= SPI_CR1_SPE;
 }
 
-// write DMA channel setup
-void init_sd_dma_TX() {
-    RCC -> AHBENR |= RCC_AHBENR_DMAEN; // enables our clock
-    DMA1_Channel5 -> CCR &= ~(0x1); // turn off the channel for now
+// // write DMA channel setup
+// void init_sd_dma_TX() {
+//     RCC -> AHBENR |= RCC_AHBENR_DMAEN; // enables our clock
+//     DMA1_Channel5 -> CCR &= ~(0x1); // turn off the channel for now
+//     DMA1_Channel5 -> CMAR = (uint32_t) &data; // link our DMA transfer to data
+//     DMA1_Channel5 -> CPAR = (uint32_t) &(SPI2 -> DR); // linked our output location
+//     DMA1_Channel5 -> CCR |= 0x1 << 4; // sets the direction to memory->peripheral
+//     DMA1_Channel5 -> CCR |= 0x1 << 7; // sets the incrementation for the memory
+//     // DMA1_Channel5 -> CCR |= 0x1 << 5; // enables circular mode
+// }
 
-    DMA1_Channel5 -> CPAR = (uint32_t) &(SPI2 -> DR); // linked our output location
-    DMA1_Channel5 -> CCR |= 0x1 << 4; // sets the direction to memory->peripheral
-    DMA1_Channel5 -> CCR |= 0x1 << 7; // sets the incrementation for the memory
-    // DMA1_Channel5 -> CCR |= 0x1 << 5; // enables circular mode
-}
-
-// read DMA channel setup
-void init_sd_dma_RX() {
-    RCC -> AHBENR |= RCC_AHBENR_DMAEN;
-    DMA1_Channel4 -> CCR &= ~(0x1);
-}
+// // read DMA channel setup
+// void init_sd_dma_RX() {
+//     RCC -> AHBENR |= RCC_AHBENR_DMAEN;
+//     DMA1_Channel4 -> CCR &= ~(0x1);
+// }
 
 int main() {
     internal_clock();

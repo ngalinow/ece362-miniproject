@@ -1,11 +1,25 @@
+#ifndef _SD_CARD_H_
+#define _SD_CARD_H_
 
 // game state variables that will be loaded and saved to the SD
 // this is the 10x10 grid of battle ship with each location saved as a number
 // there are two players each with their own boards
 
-// gameState[0] is player 1's board situation, gameState[1] is player 2 board's situation
-// 0 - no ships or shots, 1 - shot/miss, 2 - shot/hit, 3 - ship location
-int gameState[2][10][10];
+
+typedef struct _GameData {
+
+    // row data stores a byte per square
+    // x - don't care
+    // xxxx 0000
+    // LSB bits 0-3
+    // bit 0: 0 - did not shoot here, 1 - did shoot here
+    // bit 1: 0 - didn't hit anything, 1 - did hit something
+    // bit 2: 0 - we don't have a ship there, 1 - we have a ship there
+    // bit 3: 0 - our ship wasn't hit, 1 - our ship was hit
+    char row_data[10][10];
+    
+} gameData;
+
 
 // SD card commands for easy reference
 #define CMD0     (0x40+0)       /* GO_IDLE_STATE */
@@ -23,3 +37,7 @@ int gameState[2][10][10];
 #define CMD41    (0x40+41)      /* SEND_OP_COND (ACMD) */
 #define CMD55    (0x40+55)      /* APP_CMD */
 #define CMD58    (0x40+58)      /* READ_OCR */
+
+void send_cmd(unsigned int cmd);
+
+#endif
