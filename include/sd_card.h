@@ -6,21 +6,15 @@
 // this is the 10x10 grid of battle ship with each location saved as a number
 // there are two players each with their own boards
 
-
-typedef struct _GameData {
-
-    // row data stores a byte per square
-    // x - don't care
-    // xxxx 0000
-    // LSB bits 0-3
-    // bit 0: 0 - did not shoot here, 1 - did shoot here
-    // bit 1: 0 - didn't hit anything, 1 - did hit something
-    // bit 2: 0 - we don't have a ship there, 1 - we have a ship there
-    // bit 3: 0 - our ship wasn't hit, 1 - our ship was hit
-    char row_data[10][10];
-    
-} gameData;
-
+// row data stores a byte per square
+// x - don't care
+// xxxx 0000
+// LSB bits 0-3
+// bit 0: 0 - did not shoot here, 1 - did shoot here
+// bit 1: 0 - didn't hit anything, 1 - did hit something
+// bit 2: 0 - we don't have a ship there, 1 - we have a ship there
+// bit 3: 0 - our ship wasn't hit, 1 - our ship was hit
+char row_data[10][10];
 
 // SD card commands for easy reference
 #define CMD0     (0x40+0)       /* GO_IDLE_STATE */
@@ -39,6 +33,8 @@ typedef struct _GameData {
 #define CMD55    (0x40+55)      /* APP_CMD */
 #define CMD58    (0x40+58)      /* READ_OCR */
 
-uint8_t send_cmd(uint8_t b);
+uint8_t sent_byte(uint8_t b);
+void send_cmd(uint8_t cmd, uint32_t args, uint8_t crc);
+
 
 #endif

@@ -25,8 +25,8 @@ void init_spi_sd() {
     SPI2 -> CR2 |= SPI_CR2_SSOE; // SS output enabled, multimaster not allowed
     // SPI2 -> CR2 |= SPI_CR2_NSSP; // NSS pulse management, allows our spi to generate the nss
     SPI2 -> CR1 |= SPI_CR1_SSM; // enables software slave management (SSI bit determines NSS)
-    SPI2 -> CR1 |= SPI_CR1_SSI;
-    SPI2 -> CR2 |= SPI_CR2_FRXTH;
+    SPI2 -> CR1 |= SPI_CR1_SSI; // controls the nss for our controller
+    SPI2 -> CR2 |= SPI_CR2_FRXTH; // lets us know we have our byte ready to read
 
     // will use DMA for transfers
     // SPI2 -> CR2 |= SPI_CR2_TXDMAEN;
