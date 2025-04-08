@@ -1,5 +1,6 @@
 #ifndef _SD_CARD_H_
 #define _SD_CARD_H_
+#include <stdint.h>
 
 // game state variables that will be loaded and saved to the SD
 // this is the 10x10 grid of battle ship with each location saved as a number
@@ -38,6 +39,6 @@ typedef struct _GameData {
 #define CMD55    (0x40+55)      /* APP_CMD */
 #define CMD58    (0x40+58)      /* READ_OCR */
 
-void send_cmd(unsigned int cmd);
+uint8_t send_cmd(uint8_t b);
 
 #endif

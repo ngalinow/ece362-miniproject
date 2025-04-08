@@ -2,6 +2,7 @@
 #include "stm32f0xx.h"
 
 extern void internal_clock();
+extern int sd_card_init_sequance();
 
 void init_spi_sd() {
     RCC -> APB1ENR |= RCC_APB1ENR_SPI2EN;
@@ -53,13 +54,13 @@ void init_spi_sd() {
 
 int main() {
     internal_clock();
+    init_spi_sd();
 
-    int x = 4;
-    int y = 5;
-
-    int z = x + y;
-
-    return EXIT_SUCCESS;
+    if(sd_card_init_sequance() == 1) {
+        return EXIT_SUCCESS;
+    } else {
+        return EXIT_FAILURE;
+    }
 }
 
 void init_spi1_slow(void) {    
