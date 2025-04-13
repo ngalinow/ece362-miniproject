@@ -6,7 +6,13 @@
 #include "lcd.h"
 #include "tft_display.h"
 
+
 extern void internal_clock();
+extern void nano_wait(unsigned int n);
+extern char keymap;
+extern uint8_t col;
+extern char disp[9];
+char* keymap_arr = &keymap;
 
 void init_spi1_slow(void) {    
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
@@ -71,3 +77,69 @@ void setup_grid() {
     init_lcd_spi();
     draw_grid();
 }
+
+void enable_ports() {
+    RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
+    GPIOC->MODER &= ~0xFF00;
+    GPIOC->MODER |=  0x5500;
+    GPIOC->MODER &= ~0xFF;
+    GPIOC->PUPDR &= ~0xFF;
+    GPIOC->PUPDR |=  0xAA;
+  }
+
+  void drive_column(int c) {
+    c &= 0x3;
+    GPIOC->BSRR = (0xF << 4) << 16;
+    GPIOC->BSRR = (1 << (c + 4));
+  }
+
+  int read_rows() {
+    return GPIOC->IDR & 0xF;
+  }
+
+  char rows_to_key(int rows) {
+    int row = -1;
+    for(int i = 0; i < 4; i++) {
+        if(rows & (1 << i)) {
+            row = 3 - i;
+            break;
+        }
+    }
+
+    if(row == -1) return '\0';
+
+    int col_index = col & 0x3;
+    int adjusted_col = 3 - col_index;
+    int offset = row * 4 + adjusted_col;
+    return keymap_arr[offset];
+  }
+
+  void handle_key(char key) {
+    if (key == 'A') {
+        LCD_DrawLine(0, 0, 320, 240, 0x0000);
+    }
+    else if (key >= '0' && key <= '9') {
+        LCD_DrawFillRectangle(0, 0, 240, 320, 0xF800);
+    }
+}
+
+  void TIM7_IRQHandler(void) {
+    TIM7->SR &= ~TIM_SR_UIF;
+    int rows = read_rows();
+    if (rows != 0) {
+      char key = rows_to_key(rows);
+      handle_key(key);
+    }
+
+    col = (col + 1) & 0x7;
+    drive_column(col);
+  }
+
+  void setup_tim7() {
+    RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
+    TIM7->PSC = 47;
+    TIM7->ARR = 999;
+    TIM7->DIER |= TIM_DIER_UIE;
+    NVIC_EnableIRQ(TIM7_IRQn);
+    TIM7->CR1 |= TIM_CR1_CEN;
+  }

@@ -8,6 +8,16 @@
 
 
 extern void internal_clock();
+extern void nano_wait(unsigned int n);
+
+char keymap[16] = {
+    '1', '2', '3', 'A',
+    '4', '5', '6', 'B',
+    '7', '8', '9', 'C',
+    '*', '0', '#', 'D'
+};
+
+uint8_t col = 0;
 
 void init_spi_sd() {
     RCC -> APB1ENR |= RCC_APB1ENR_SPI2EN;
@@ -54,5 +64,8 @@ void init_sd_dma_RX() {
 }
 
 int main() {
+    enable_ports();
     setup_grid();
+    setup_tim7();
+
 }
