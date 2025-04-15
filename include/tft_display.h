@@ -13,18 +13,6 @@ void setup_tim7();
 
 // NOTES FOR THE TFT DISPLAY:
 
-// drawfillrect 0 0 200 200 0f0f
-// 0 0 (x and y coord based on top-left corner near purple wire)
-// 200 200 (width and height of the rectangle) (240 x 320 is the TFT MAX)
-// 0f0f (color)
-
-
-// drawline 0 0 200 200 2
-// 0 0 (x and y coord start point based on top-left corner near purple wire)
-// 200 200 (end point of the line)
-// 2 (thickness of the line)
-
-
 // CODE FOR THE GRID
 // drawfillrect 0 0 240 320 0f0f
 // drawline 24 0 24 320 2
@@ -45,3 +33,30 @@ void setup_tim7();
 // drawline 0 224 240 224 2
 // drawline 0 256 240 256 2
 // drawline 0 288 240 288 2
+
+// Bottom left corner is (0,0)
+// Bottom right corner is (0, 320)
+// Top left corner is (240, 0)
+// Top right corner is (240, 320)
+
+//     C0  C1  C2  C3  C4  C5  C6  C7  C8  C9  
+// A0
+// A1
+// A2
+// A3
+// A4
+// A5
+// A6
+// A7
+// A8
+// A9
+
+// MAX_ROW = 240
+// MAX_COL = 320
+// ROW_FACTOR = 24
+// COL_FACTOR = 32
+
+// Guess == A0C0
+// key == {A0C0}
+// LCD_DrawLine(240, 0, 216, 32, 0xF800); --> LCD_Drawline(x, (COL_FACTOR * key[3]), x - ROW_FACTOR, (COL_FACTOR * key[3]) + COL_FACTOR)
+// LCD_DrawLine(216, 0, 240, 32, 0xF800);

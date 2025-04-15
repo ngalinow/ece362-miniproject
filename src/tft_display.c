@@ -9,10 +9,13 @@
 
 extern void internal_clock();
 extern void nano_wait(unsigned int n);
+char key_buffer[5] = {0};
+int key_index = 0;
 extern char keymap;
 extern uint8_t col;
 extern char disp[9];
 char* keymap_arr = &keymap;
+int key_count = 0;
 
 void init_spi1_slow(void) {    
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
@@ -115,39 +118,70 @@ void enable_ports() {
   }
 
   void handle_key(char key) {
-    if (key == 'A') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFFF);
-    } else if (key == 'B') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x0000);
-    } else if (key == 'C') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x001F);
-    } else if (key == 'D') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFE0);
-    } else if (key == '1') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x07FF);
-    } else if (key == '2') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0xF800);
-    } else if (key == '3') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0xF81F);
-    } else if (key == '4') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x07E0);
-    } else if (key == '5') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x7FFF);
-    } else if (key == '6') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0xBC40);
-    } else if (key == '7') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0xFC07);
-    } else if (key == '8') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x8430);
-    } else if (key == '9') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x01CF);
-    } else if (key == '0') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x7D7C);
-    } else if (key == '*') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x5458);
-    } else if (key == '#') {
-      LCD_DrawFillRectangle(0, 0, 240, 320, 0x841F);
+    for(int i = 4; i > 0; i--) {
+      key_buffer[i] = key_buffer[i - 1];
     }
+
+    key_buffer[0] = key;
+
+    // if (key_buffer[0] == 'A' && key_buffer[1] == '0') {
+    //   LCD_DrawLine(240, 0, 216, 32, 0xF800);
+    //   LCD_DrawLine(216, 0, 240, 32, 0xF800);
+    // }
+
+
+    // if (key_count <4) {
+    //   key_count++;
+    // }
+
+    int Row_picked;
+    int col_picked;
+    
+
+    Row_picked = key_buffer[1] - 48;
+    col_picked = key_buffer[3] - 48; 
+    
+  
+
+    if ((key_buffer[0] == '#' && key_buffer[1] != '\0' && key_buffer[2] != '\0' && key_buffer[3] != '\0' && key_buffer[4] != '\0') ) { //Hit 
+      LCD_DrawLine(216, 0, 240, 32, 0xF800);
+      LCD_DrawLine(240, 0, 216, 32, 0xF800);
+      //LCD_DrawLine(240-(24*Row_picked), (0+32*col_picked), (240-24*(Row_picked+1)), 32*(col_picked+1), 0xF800);
+      //LCD_DrawLine(240-(24*(Row_picked+1)), (0+32*(col_picked+1)), (240-24*(Row_picked)), 32*(col_picked+1), 0xF800);
+    }
+    // if (key == 'A') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFFF);
+    // } else if (key == 'B') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x0000);
+    // } else if (key == 'C') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x001F);
+    // } else if (key == 'D') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFE0);
+    // } else if (key == '1') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x07FF);
+    // } else if (key == '2') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0xF800);
+    // } else if (key == '3') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0xF81F);
+    // } else if (key == '4') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x07E0);
+    // } else if (key == '5') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x7FFF);
+    // } else if (key == '6') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0xBC40);
+    // } else if (key == '7') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0xFC07);
+    // } else if (key == '8') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x8430);
+    // } else if (key == '9') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x01CF);
+    // } else if (key == '0') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x7D7C);
+    // } else if (key == '*') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x5458);
+    // } else if (key == '#') {
+    //   LCD_DrawFillRectangle(0, 0, 240, 320, 0x841F);
+    // }
 }
 
   void TIM7_IRQHandler(void) {
@@ -165,7 +199,7 @@ void enable_ports() {
   void setup_tim7() {
     RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
     TIM7->PSC = 47;
-    TIM7->ARR = 999;
+    TIM7->ARR = 99;
     TIM7->DIER |= TIM_DIER_UIE;
     NVIC_EnableIRQ(TIM7_IRQn);
     TIM7->CR1 |= TIM_CR1_CEN;
