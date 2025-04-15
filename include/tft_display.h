@@ -10,6 +10,7 @@ int read_rows(void);
 char rows_to_key(int rows);
 void handle_key(char key);
 void setup_tim7();
+char get_history(int n);
 
 // NOTES FOR THE TFT DISPLAY:
 
@@ -60,3 +61,17 @@ void setup_tim7();
 // key == {A0C0}
 // LCD_DrawLine(240, 0, 216, 32, 0xF800); --> LCD_Drawline(x, (COL_FACTOR * key[3]), x - ROW_FACTOR, (COL_FACTOR * key[3]) + COL_FACTOR)
 // LCD_DrawLine(216, 0, 240, 32, 0xF800);
+
+
+
+// key{A0C2}
+// Key{AAAA}
+// key{1111}
+// key{A}
+// Buffer{****}
+// Buffer[0] = key
+
+// char cords[4]
+
+// if key(a) cords [0] == 0
+// if key(0-9) cords [1] == 

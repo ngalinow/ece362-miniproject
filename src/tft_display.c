@@ -6,16 +6,17 @@
 #include "lcd.h"
 #include "tft_display.h"
 
-
+#define HISTORY_SIZE 4
 extern void internal_clock();
 extern void nano_wait(unsigned int n);
-char key_buffer[5] = {0};
-int key_index = 0;
+char key_buffer[4] = {0};
 extern char keymap;
 extern uint8_t col;
 extern char disp[9];
 char* keymap_arr = &keymap;
-int key_count = 0;
+char coords[HISTORY_SIZE];
+int history_index = 0;
+int history_count = 0;
 
 void init_spi1_slow(void) {    
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
@@ -118,37 +119,59 @@ void enable_ports() {
   }
 
   void handle_key(char key) {
-    for(int i = 4; i > 0; i--) {
-      key_buffer[i] = key_buffer[i - 1];
+    // int row_picked;
+    // int col_picked;
+
+    switch (key) {
+      case '0':
+        LCD_DrawLine(240, 0, 216, 32, 0xF800);
+        LCD_DrawLine(216, 0, 240, 32, 0xF800);
+        break;
+      case '1':
+        LCD_DrawLine(216, 32, 192, 64, 0xF800);
+        LCD_DrawLine(192, 32, 216, 64, 0xF800);
+        break;
+      case '2':
+        LCD_DrawLine(192, 64, 168, 96, 0xF800);
+        LCD_DrawLine(168, 64, 192, 96, 0xF800);
+        break;
+      case '3':
+        LCD_DrawLine(168, 96, 144, 128, 0xF800);
+        LCD_DrawLine(144, 96, 168, 128, 0xF800);
+        break;
+      case '4':
+        LCD_DrawLine(144, 128, 120, 160, 0xF800);
+        LCD_DrawLine(120, 128, 144, 160, 0xF800);
+        break;
+      case '5':
+        LCD_DrawLine(120, 160, 96, 192, 0xF800);
+        LCD_DrawLine(96, 160, 120, 192, 0xF800);
+        break;
+      case '6':
+        LCD_DrawLine(96, 192, 72, 224, 0xF800);
+        LCD_DrawLine(72, 192, 96, 224, 0xF800);
+        break;
+      case '7':
+        LCD_DrawLine(72, 224, 48, 256, 0xF800);
+        LCD_DrawLine(48, 224, 72, 256, 0xF800);
+        break;
+      case '8':
+        LCD_DrawLine(48, 256, 24, 288, 0xF800);
+        LCD_DrawLine(24, 256, 48, 288, 0xF800);
+        break;
+      case '9':
+        LCD_DrawLine(24, 288, 0, 320, 0xF800);
+        LCD_DrawLine(0, 288, 24, 320, 0xF800);
+        break;
     }
 
-    key_buffer[0] = key;
+    // Row_picked = key_buffer[1] - 48;
+    // col_picked = key_buffer[3] - 48; 
 
-    // if (key_buffer[0] == 'A' && key_buffer[1] == '0') {
-    //   LCD_DrawLine(240, 0, 216, 32, 0xF800);
-    //   LCD_DrawLine(216, 0, 240, 32, 0xF800);
-    // }
-
-
-    // if (key_count <4) {
-    //   key_count++;
-    // }
-
-    int Row_picked;
-    int col_picked;
-    
-
-    Row_picked = key_buffer[1] - 48;
-    col_picked = key_buffer[3] - 48; 
-    
   
-
-    if ((key_buffer[0] == '#' && key_buffer[1] != '\0' && key_buffer[2] != '\0' && key_buffer[3] != '\0' && key_buffer[4] != '\0') ) { //Hit 
-      LCD_DrawLine(216, 0, 240, 32, 0xF800);
-      LCD_DrawLine(240, 0, 216, 32, 0xF800);
-      //LCD_DrawLine(240-(24*Row_picked), (0+32*col_picked), (240-24*(Row_picked+1)), 32*(col_picked+1), 0xF800);
-      //LCD_DrawLine(240-(24*(Row_picked+1)), (0+32*(col_picked+1)), (240-24*(Row_picked)), 32*(col_picked+1), 0xF800);
-    }
+    // LCD_DrawLine(240-(24*Row_picked), (0+32*col_picked), (240-24*(Row_picked+1)), 32*(col_picked+1), 0xF800);
+    // LCD_DrawLine(240-(24*(Row_picked+1)), (0+32*(col_picked+1)), (240-24*(Row_picked)), 32*(col_picked+1), 0xF800);
+  
     // if (key == 'A') {
     //   LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFFF);
     // } else if (key == 'B') {
@@ -204,3 +227,4 @@ void enable_ports() {
     NVIC_EnableIRQ(TIM7_IRQn);
     TIM7->CR1 |= TIM_CR1_CEN;
   }
+
