@@ -39,48 +39,26 @@ void init_spi_sd() {
 
     SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
     SPI2 -> CR2 |= SPI_CR2_SSOE; // SS output enabled, multimaster not allowed
-    // SPI2 -> CR2 |= SPI_CR2_NSSP; // NSS pulse management, allows our spi to generate the nss
     SPI2 -> CR1 |= SPI_CR1_SSM; // enables software slave management (SSI bit determines NSS)
     SPI2 -> CR1 |= SPI_CR1_SSI; // controls the nss for our controller
     SPI2 -> CR2 |= SPI_CR2_FRXTH; // lets us know we have our byte ready to read
-
-    // will use DMA for transfers
-    // SPI2 -> CR2 |= SPI_CR2_TXDMAEN;
-    // SPI2 -> CR2 |= SPI_CR2_RXDMAEN;
     
     SPI2 -> CR1 |= SPI_CR1_SPE;
 }
 
-// // write DMA channel setup
-// void init_sd_dma_TX() {
-//     RCC -> AHBENR |= RCC_AHBENR_DMAEN; // enables our clock
-//     DMA1_Channel5 -> CCR &= ~(0x1); // turn off the channel for now
-//     DMA1_Channel5 -> CMAR = (uint32_t) &data; // link our DMA transfer to data
-//     DMA1_Channel5 -> CPAR = (uint32_t) &(SPI2 -> DR); // linked our output location
-//     DMA1_Channel5 -> CCR |= 0x1 << 4; // sets the direction to memory->peripheral
-//     DMA1_Channel5 -> CCR |= 0x1 << 7; // sets the incrementation for the memory
-//     // DMA1_Channel5 -> CCR |= 0x1 << 5; // enables circular mode
-// }
-
-// // read DMA channel setup
-// void init_sd_dma_RX() {
-//     RCC -> AHBENR |= RCC_AHBENR_DMAEN;
-//     DMA1_Channel4 -> CCR &= ~(0x1);
-// }
-
 int main() {
     internal_clock();
-    //init_spi_sd();
+    init_spi_sd();
 
-    enable_ports();
-    setup_grid();
-    setup_tim7();
+    // enable_ports();
+    // setup_grid();
+    // setup_tim7();
 
-    // if(sd_card_init_sequance() == 1) {
-    //     return EXIT_SUCCESS;
-    // } else {
-    //     return EXIT_FAILURE;
-    // }
+    if(sd_card_init_sequance() == 1) {
+        return EXIT_SUCCESS;
+    } else {
+        return EXIT_FAILURE;
+    }
 }
 
 
