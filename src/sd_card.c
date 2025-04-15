@@ -3,11 +3,7 @@
 #include "sd_card.h"
 #include "stm32f0xx.h"
 
-void nano_wait(unsigned int n) {
-    asm(    "        mov r0,%0\n"
-            "repeat: sub r0,#83\n"
-            "        bgt repeat\n" : : "r"(n) : "r0", "cc");
-}
+extern void nano_wait(unsigned int n);
 
 void enable_sd_card() {
     GPIOB -> ODR &= ~GPIO_ODR_2;
