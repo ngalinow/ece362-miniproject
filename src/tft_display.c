@@ -116,10 +116,37 @@ void enable_ports() {
 
   void handle_key(char key) {
     if (key == 'A') {
-        LCD_DrawLine(0, 0, 320, 240, 0x0000);
-    }
-    else if (key >= '0' && key <= '9') {
-        LCD_DrawFillRectangle(0, 0, 240, 320, 0xF800);
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFFF);
+    } else if (key == 'B') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x0000);
+    } else if (key == 'C') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x001F);
+    } else if (key == 'D') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFE0);
+    } else if (key == '1') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x07FF);
+    } else if (key == '2') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0xF800);
+    } else if (key == '3') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0xF81F);
+    } else if (key == '4') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x07E0);
+    } else if (key == '5') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x7FFF);
+    } else if (key == '6') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0xBC40);
+    } else if (key == '7') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0xFC07);
+    } else if (key == '8') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x8430);
+    } else if (key == '9') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x01CF);
+    } else if (key == '0') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x7D7C);
+    } else if (key == '*') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x5458);
+    } else if (key == '#') {
+      LCD_DrawFillRectangle(0, 0, 240, 320, 0x841F);
     }
 }
 
