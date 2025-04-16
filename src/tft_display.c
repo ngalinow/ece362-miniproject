@@ -5,7 +5,6 @@
 #include "tty.h"
 #include "lcd.h"
 #include "tft_display.h"
-
 #define MAX_KEYS 4
 
 char key_buffer[MAX_KEYS];
@@ -14,8 +13,9 @@ int keys_collected = 0;
 
 int rowx = -1;
 int coly = -1;
-int y1 = 0;
-int y2 = 0;
+int keypad_counter = 0;
+int hit = 0; //1 means it was a hit and 0 means it was not a hit 
+
 
 char keypad_map[4][4] = {
   {'1','2','3','A'},
@@ -99,6 +99,7 @@ void setup_grid() {
     setbuf(stderr,0);
     init_lcd_spi();
     draw_grid();
+
 }
 
 void enable_ports() {
@@ -144,21 +145,30 @@ void enable_ports() {
       case '0':
         if(rowx>-1){
           coly=0;
+          if(hit>0){
           LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
           LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
-          
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          }
         }
         rowx=0;
         nano_wait(1000000000);
         rowx = 0;
         coly = 0;
-        y1 =1;
+        keypad_counter =1;
         break;
       case '1':
       if(rowx>-1){
         coly=1;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800); 
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          }
       }
       rowx=1;
       nano_wait(1000000000);
@@ -166,96 +176,136 @@ void enable_ports() {
 
         // LCD_DrawLine(216, 32, 192, 64, 0xF800);
         // LCD_DrawLine(192, 32, 216, 64, 0xF800);
-        y1++;
+        keypad_counter++;
         break;
       case '2':
       if(rowx>-1){
         coly=2;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          } 
       }
       rowx=2;
       nano_wait(1000000000);
-      y1++;
+      keypad_counter++;
         break;
       case '3':
       if(rowx>-1){
         coly=3;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          }
       }
       rowx=3;
       nano_wait(1000000000);
-      y1++;
+      keypad_counter++;
         break;
       case '4':
       if(rowx>-1){
         coly=4;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          }
       }
       rowx=4;
       nano_wait(1000000000);
-      y1++;
+      keypad_counter++;
         break;
       case '5':
       if(rowx>-1){
         coly=5;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          } 
       }
       rowx=5;
       nano_wait(1000000000);
-      y1++;
+      keypad_counter++;
         break;
       case '6':
       if(rowx>-1){
         coly=6;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          }  
       }
       rowx=6;
       nano_wait(1000000000);
-      y1++;
+      keypad_counter++;
         break;
       case '7':
       if(rowx>-1){
         coly=7;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          } 
       }
       rowx=7;
       nano_wait(1000000000);
-      y1++;
+      keypad_counter++;
         break;
       case '8':
       if(rowx>-1){
         coly=8;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          } 
       }
       rowx=8;
       nano_wait(1000000000);
-      y1++;
+      keypad_counter++;
         break;
       case '9':
       if(rowx>-1){
         coly=9;
-        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+        if(hit>0){
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          }
+          else if(hit==0){
+            LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+          } 
       }
       rowx=9;
       nano_wait(1000000000);
-      y1++;
+      keypad_counter++;
         break;
        
     }
-    if(y1>1){
+    if(keypad_counter>1){
       rowx = -1;
       coly =-1;
-      y1 = 0;
+      keypad_counter = 0;
     }
-
+    
     // Row_picked = key_buffer[1] - 48;
     // col_picked = key_buffer[3] - 48; 
 
