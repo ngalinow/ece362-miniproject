@@ -10,7 +10,6 @@ int read_rows(void);
 char rows_to_key(int rows);
 void handle_key(char key);
 void setup_tim7();
-char get_history(int n);
 
 // NOTES FOR THE TFT DISPLAY:
 

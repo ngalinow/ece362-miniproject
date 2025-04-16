@@ -6,10 +6,29 @@
 #include "lcd.h"
 #include "tft_display.h"
 
+#define MAX_KEYS 4
+
+char key_buffer[MAX_KEYS];
+int key_index = 0;
+int keys_collected = 0;
+
+int rowx = -1;
+int coly = -1;
+int y1 = 0;
+int y2 = 0;
+
+char keypad_map[4][4] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+
 #define HISTORY_SIZE 4
 extern void internal_clock();
 extern void nano_wait(unsigned int n);
-char key_buffer[4] = {0};
+//char key_buffer[4] = {0};
 extern char keymap;
 extern uint8_t col;
 extern char disp[9];
@@ -109,7 +128,7 @@ void enable_ports() {
             break;
         }
     }
-
+  
     if(row == -1) return '\0';
 
     int col_index = col & 0x3;
@@ -121,48 +140,120 @@ void enable_ports() {
   void handle_key(char key) {
     // int row_picked;
     // int col_picked;
-
     switch (key) {
       case '0':
-        LCD_DrawLine(240, 0, 216, 32, 0xF800);
-        LCD_DrawLine(216, 0, 240, 32, 0xF800);
+        if(rowx>-1){
+          coly=0;
+          LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+          LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+          
+        }
+        rowx=0;
+        nano_wait(1000000000);
+        rowx = 0;
+        coly = 0;
+        y1 =1;
         break;
       case '1':
-        LCD_DrawLine(216, 32, 192, 64, 0xF800);
-        LCD_DrawLine(192, 32, 216, 64, 0xF800);
+      if(rowx>-1){
+        coly=1;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800); 
+      }
+      rowx=1;
+      nano_wait(1000000000);
+
+
+        // LCD_DrawLine(216, 32, 192, 64, 0xF800);
+        // LCD_DrawLine(192, 32, 216, 64, 0xF800);
+        y1++;
         break;
       case '2':
-        LCD_DrawLine(192, 64, 168, 96, 0xF800);
-        LCD_DrawLine(168, 64, 192, 96, 0xF800);
+      if(rowx>-1){
+        coly=2;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+      }
+      rowx=2;
+      nano_wait(1000000000);
+      y1++;
         break;
       case '3':
-        LCD_DrawLine(168, 96, 144, 128, 0xF800);
-        LCD_DrawLine(144, 96, 168, 128, 0xF800);
+      if(rowx>-1){
+        coly=3;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+      }
+      rowx=3;
+      nano_wait(1000000000);
+      y1++;
         break;
       case '4':
-        LCD_DrawLine(144, 128, 120, 160, 0xF800);
-        LCD_DrawLine(120, 128, 144, 160, 0xF800);
+      if(rowx>-1){
+        coly=4;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+      }
+      rowx=4;
+      nano_wait(1000000000);
+      y1++;
         break;
       case '5':
-        LCD_DrawLine(120, 160, 96, 192, 0xF800);
-        LCD_DrawLine(96, 160, 120, 192, 0xF800);
+      if(rowx>-1){
+        coly=5;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+      }
+      rowx=5;
+      nano_wait(1000000000);
+      y1++;
         break;
       case '6':
-        LCD_DrawLine(96, 192, 72, 224, 0xF800);
-        LCD_DrawLine(72, 192, 96, 224, 0xF800);
+      if(rowx>-1){
+        coly=6;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+      }
+      rowx=6;
+      nano_wait(1000000000);
+      y1++;
         break;
       case '7':
-        LCD_DrawLine(72, 224, 48, 256, 0xF800);
-        LCD_DrawLine(48, 224, 72, 256, 0xF800);
+      if(rowx>-1){
+        coly=7;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+      }
+      rowx=7;
+      nano_wait(1000000000);
+      y1++;
         break;
       case '8':
-        LCD_DrawLine(48, 256, 24, 288, 0xF800);
-        LCD_DrawLine(24, 256, 48, 288, 0xF800);
+      if(rowx>-1){
+        coly=8;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+      }
+      rowx=8;
+      nano_wait(1000000000);
+      y1++;
         break;
       case '9':
-        LCD_DrawLine(24, 288, 0, 320, 0xF800);
-        LCD_DrawLine(0, 288, 24, 320, 0xF800);
+      if(rowx>-1){
+        coly=9;
+        LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+        LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+      }
+      rowx=9;
+      nano_wait(1000000000);
+      y1++;
         break;
+       
+    }
+    if(y1>1){
+      rowx = -1;
+      coly =-1;
+      y1 = 0;
     }
 
     // Row_picked = key_buffer[1] - 48;
@@ -228,3 +319,4 @@ void enable_ports() {
     TIM7->CR1 |= TIM_CR1_CEN;
   }
 
+  
