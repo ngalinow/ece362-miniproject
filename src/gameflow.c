@@ -1,51 +1,63 @@
 
 #include "gameflow.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <stdbool.h>
+#include <ctype.h>
+#include <string.h>
 
-// Initialize an empty 10x10 board
 void initializeBoard(char board[BOARD_SIZE][BOARD_SIZE]) {
     for (int y = 0; y < BOARD_SIZE; y++) {
         for (int x = 0; x < BOARD_SIZE; x++) {
-            board[y][x] = '~'; // '~' represents water
+            board[y][x] = '~';
         }
     }
 }
 
 // Initialize player with empty boards and ships
-void initializePlayer(Player *player) {
+ void initializePlayer(Player *player) {
     initializeBoard(player->board);
     initializeBoard(player->attackBoard);
     
-    // Initialize ships with unique symbols
-    player->ships[0] = (Ship){CARRIER, 0, false, 'C'};
-    player->ships[1] = (Ship){BATTLESHIP, 0, false, 'B'};
-    player->ships[2] = (Ship){CRUISER, 0, false, 'R'};
-    player->ships[3] = (Ship){SUBMARINE, 0, false, 'S'};
-    player->ships[4] = (Ship){DESTROYER, 0, false, 'D'};
+    // Initialize ships with unique symbols and correct lengths
+    player->ships[0] = (Ship){CARRIER, 0, false, 'A'};    // Aircraft Carrier (3)
+    player->ships[1] = (Ship){BATTLESHIP, 0, false, 'B'}; // Battleship (2)
     
     player->shipsRemaining = NUM_SHIPS;
 }
 
-// Check if ship placement is valid on 10x10 grid
+// Check if ship placement is valid
 bool isValidPlacement(char board[BOARD_SIZE][BOARD_SIZE], int x, int y, int length, bool isHorizontal) {
-    // Check boundaries
-    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) return false;
+    // Check if starting position is valid
+    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
+        return false;
+    }
     
+    // Check if ship fits on the board
     if (isHorizontal) {
         if (x + length > BOARD_SIZE) return false;
+        // Check for overlapping ships
         for (int i = x; i < x + length; i++) {
             if (board[y][i] != '~') return false;
+            // Check adjacent cells (optional for game rules)
         }
     } else {
         if (y + length > BOARD_SIZE) return false;
+        // Check for overlapping ships
         for (int i = y; i < y + length; i++) {
             if (board[i][x] != '~') return false;
+            // Check adjacent cells (optional for game rules)
         }
     }
+    
     return true;
 }
 
 // Place a ship on the board
 bool placeShip(Player *player, int shipIndex, int x, int y, bool isHorizontal) {
+    if (shipIndex < 0 || shipIndex >= NUM_SHIPS) return false;
+    
     int length = player->ships[shipIndex].type;
     char symbol = player->ships[shipIndex].symbol;
     
@@ -53,6 +65,7 @@ bool placeShip(Player *player, int shipIndex, int x, int y, bool isHorizontal) {
         return false;
     }
     
+    // Place the ship
     if (isHorizontal) {
         for (int i = x; i < x + length; i++) {
             player->board[y][i] = symbol;
@@ -62,18 +75,17 @@ bool placeShip(Player *player, int shipIndex, int x, int y, bool isHorizontal) {
             player->board[i][x] = symbol;
         }
     }
+    
     return true;
 }
 
 // Automatically place all ships
 void placeShips(Player *player) {
-    srand(time(NULL));
-    
     for (int i = 0; i < NUM_SHIPS; i++) {
         bool placed = false;
         int attempts = 0;
         
-        while (!placed && attempts < 100) {
+        while (!placed && attempts < MAX_PLACEMENT_ATTEMPTS) {
             int x = rand() % BOARD_SIZE;
             int y = rand() % BOARD_SIZE;
             bool isHorizontal = rand() % 2 == 0;
@@ -83,13 +95,13 @@ void placeShips(Player *player) {
         }
         
         if (!placed) {
-            printf("Failed to place ship %d after 100 attempts\n", i);
-            exit(1);
+            fprintf(stderr, "Error: Could not place ship %d after %d attempts\n", i, MAX_PLACEMENT_ATTEMPTS);
+            exit(EXIT_FAILURE);
         }
     }
 }
 
-// Print the 10x10 board with proper formatting
+// Print the board with proper formatting
 void printBoard(char board[BOARD_SIZE][BOARD_SIZE], bool showShips) {
     // Print column headers
     printf("   ");
@@ -103,7 +115,7 @@ void printBoard(char board[BOARD_SIZE][BOARD_SIZE], bool showShips) {
         printf("%2d ", y);
         for (int x = 0; x < BOARD_SIZE; x++) {
             char c = board[y][x];
-            if (!showShips && isalpha(c) && c != 'X' && c != 'O') {
+            if (!showShips && c != '~' && c != 'X' && c != 'O') {
                 c = '~'; // Hide ships if not showing
             }
             printf("%2c", c);
@@ -114,15 +126,28 @@ void printBoard(char board[BOARD_SIZE][BOARD_SIZE], bool showShips) {
 
 // Print current game state
 void printGameState(Player *player, Player *opponent) {
-    printf("\n=== YOUR SHIPS ===\n");
+    printf("\n=== YOUR FLEET === (Ships remaining: %d)\n", player->shipsRemaining);
     printBoard(player->board, true);
     
     printf("\n=== YOUR ATTACKS ===\n");
     printBoard(player->attackBoard, false);
+    
+    // Print sunk ships information
+    printf("\nSunk ships: ");
+    bool anySunk = false;
+    for (int i = 0; i < NUM_SHIPS; i++) {
+        if (player->ships[i].isSunk) {
+            printf("%c ", player->ships[i].symbol);
+            anySunk = true;
+        }
+    }
+    if (!anySunk) printf("None");
+    printf("\n");
 }
 
 // Execute an attack
 bool makeAttack(Player *attacker, Player *defender, int x, int y) {
+    // Validate coordinates
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
         return false;
     }
@@ -135,8 +160,8 @@ bool makeAttack(Player *attacker, Player *defender, int x, int y) {
     // Check if hit
     if (defender->board[y][x] != '~') {
         char shipSymbol = defender->board[y][x];
-        attacker->attackBoard[y][x] = 'X';
-        defender->board[y][x] = 'X';
+        attacker->attackBoard[y][x] = 'X'; // Mark hit
+        defender->board[y][x] = 'X';       // Mark hit on defender's board
         
         // Update ship status
         for (int i = 0; i < NUM_SHIPS; i++) {
@@ -145,14 +170,19 @@ bool makeAttack(Player *attacker, Player *defender, int x, int y) {
                 if (defender->ships[i].hits == defender->ships[i].type) {
                     defender->ships[i].isSunk = true;
                     defender->shipsRemaining--;
-                    printf("You sunk the %c ship!\n", shipSymbol);
+                    printf("\a"); // Beep when ship is sunk
+                    printf("You sunk the %s ship!\n", 
+                        shipSymbol == 'A' ? "Aircraft Carrier" :
+                        shipSymbol == 'B' ? "Battleship" :
+                        shipSymbol == 'C' ? "Cruiser" :
+                        shipSymbol == 'S' ? "Submarine" : "Destroyer");
                 }
                 break;
             }
         }
     } else {
-        attacker->attackBoard[y][x] = 'O';
-        defender->board[y][x] = 'O';
+        attacker->attackBoard[y][x] = 'O'; // Mark miss
+        defender->board[y][x] = 'O';       // Mark miss on defender's board
     }
     return true;
 }
@@ -162,18 +192,31 @@ bool isGameOver(Player *player) {
     return player->shipsRemaining == 0;
 }
 
+// Clear input buffer
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
 // Main game loop
 void playGame() {
     Player human, computer;
     
+    // Initialize random seed
+    srand(time(NULL));
+    
+    // Initialize players
     initializePlayer(&human);
     initializePlayer(&computer);
     
     printf("=== BATTLESHIP GAME ===\n");
     printf("Board size: %dx%d\n", BOARD_SIZE, BOARD_SIZE);
+    printf("Ships: A(5), B(4), C(3), S(3), D(2)\n\n");
     
     // Place ships
+    printf("Placing your ships randomly...\n");
     placeShips(&human);
+    printf("Placing computer's ships randomly...\n");
     placeShips(&computer);
     
     bool humanTurn = true;
@@ -185,12 +228,12 @@ void playGame() {
             int x, y;
             printf("\nEnter attack coordinates (x y): ");
             while (scanf("%d %d", &x, &y) != 2 || !makeAttack(&human, &computer, x, y)) {
-                printf("Invalid coordinates. Try again (x y): ");
-                while (getchar() != '\n'); // Clear input buffer
+                printf("Invalid coordinates or already attacked. Try again (x y): ");
+                clearInputBuffer();
             }
             printf("You attacked (%d, %d)\n", x, y);
         } else {
-            // Computer's turn
+            // Computer's turn (simple random AI)
             int x, y;
             do {
                 x = rand() % BOARD_SIZE;
@@ -203,23 +246,5 @@ void playGame() {
         humanTurn = !humanTurn;
     }
     
-    // Game over
-    printf("\n=== FINAL BOARDS ===\n");
-    printGameState(&human, &computer);
-    printf("\n=== OPPONENT'S SHIPS ===\n");
-    printBoard(computer.board, true);
-    
-    if (isGameOver(&human)) {
-        printf("\nGAME OVER - COMPUTER WINS!\n");
-    } else {
-        printf("\nCONGRATULATIONS - YOU WIN!\n");
-    }
+
 }
-
-int main() {
-    srand(time(NULL)); // Seed random number generator
-    playGame();
-    return 0;
-}
-
-

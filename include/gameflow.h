@@ -10,15 +10,15 @@
 
 #define BOARD_SIZE 10
 #define NUM_SHIPS 5
+#define MAX_PLACEMENT_ATTEMPTS 100 // 10 x 10
+
 
 // Ship types with their lengths
 typedef enum {
-    CARRIER = 5,
-    BATTLESHIP = 4,
-    CRUISER = 3,
-    SUBMARINE = 3,
-    DESTROYER = 2
+    CARRIER = 3,
+    BATTLESHIP = 2,
 } ShipType;
+
 
 // Ship structure
 typedef struct {
@@ -28,6 +28,7 @@ typedef struct {
     char symbol;
 } Ship;
 
+
 // Player structure
 typedef struct {
     char board[BOARD_SIZE][BOARD_SIZE];      // Own ships
@@ -35,6 +36,7 @@ typedef struct {
     Ship ships[NUM_SHIPS];
     int shipsRemaining;
 } Player;
+
 
 // Function prototypes
 void initializeBoard(char board[BOARD_SIZE][BOARD_SIZE]);
@@ -48,5 +50,8 @@ bool makeAttack(Player *attacker, Player *defender, int x, int y);
 bool isGameOver(Player *player);
 void playGame();
 
+
 #endif 
+
+
 
