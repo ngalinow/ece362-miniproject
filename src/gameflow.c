@@ -9,40 +9,6 @@
 
 
 
-// bool loadGameFromSD(const char* filename, GameSaveData* data) {
-//  data is a pointer to gamesavedata that has the game state
-//     FIL file;
-//     UINT bytesRead;
-//     FRESULT res;
-    
-//     // Open file for reading only
-//     res = f_open(&file, filename, FA_READ);
-//     if (res != FR_OK) {
-//         printf("[ERROR] Couldn't open save file (error %d)\n", res);
-//         return false;
-//     }
-    
-//     // Read the entire game state structure
-//     res = f_read(&file, data, sizeof(GameSaveData), &bytesRead); 
-//     f_close(&file);
-    
-//     // Verify complete read
-//     if (res != FR_OK || bytesRead != sizeof(GameSaveData)) {
-//         printf("[ERROR] Incomplete read (%d of %d bytes)\n", // debugging
-//               bytesRead, sizeof(GameSaveData));
-//         return false;
-//     }
-    
-//     // Check for version compatibility
-//     if (data->version != CURRENT_GAME_VERSION) {
-//         printf("[ERROR] Save version mismatch (file:%d vs current:%d)\n", // debugging
-//               data->version, CURRENT_GAME_VERSION);
-//         return false;
-//     }
-    
-//   
-// }
-
 
 
 
