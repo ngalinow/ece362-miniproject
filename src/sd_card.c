@@ -4,6 +4,8 @@
 #include "stm32f0xx.h"
 
 extern void nano_wait(unsigned int n);
+int write_game_data(int data[10]);
+int read_data(int data[10]);
 
 void enable_sd_card() {
     GPIOB -> ODR &= ~GPIO_ODR_2;
@@ -13,9 +15,21 @@ void disable_sd_card() {
     GPIOB -> ODR |= GPIO_ODR_2;
 }
 
+void enable_stm() {
+    SPI2 -> CR1 &= ~SPI_CR1_SSI;
+}
+
+void disable_stm() {
+    SPI2 -> CR1 |= SPI_CR1_SSI;
+}
+
+void send_data(char b) {
+    while((SPI2->SR & SPI_SR_TXE) == 0);
+    *((volatile uint8_t*)&(SPI2->DR)) = b;
+}
+
 // sends one byte of information and captures what the SD card sends back
-uint8_t send_byte(uint8_t b)
-{
+uint8_t send_byte(uint8_t b) {
     while((SPI2->SR & SPI_SR_TXE) == 0);
     *((volatile uint8_t*)&(SPI2->DR)) = b;
     int value = 0xff;
@@ -24,7 +38,7 @@ uint8_t send_byte(uint8_t b)
         count++;
         nano_wait(100);
     }
-        value = *(volatile uint8_t *)&(SPI2->DR);
+    value = *(volatile uint8_t *)&(SPI2->DR);
     while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
     return value;
 }
@@ -35,7 +49,7 @@ void send_cmd(uint8_t cmd, uint32_t args, uint8_t crc) {
     send_byte(args >> 16);
     send_byte(args >> 8);
     send_byte(args);
-    send_byte(crc);
+    int r = send_byte(crc);
 }
 
 // used after a command, waits for the sd card to respond
@@ -64,10 +78,10 @@ int sd_card_init_sequance() {
         send_byte(0xff);
     }
 
-    // SPI2 -> CR1 &= ~SPI_CR1_SPE;
-    // SPI2 -> CR1 |= 0x1 << 3;
-    // SPI2 -> CR1 &= ~(0x3 << 4);
-    // SPI2 -> CR1 |= SPI_CR1_SPE;
+    SPI2 -> CR1 &= ~SPI_CR1_SPE;
+    SPI2 -> CR1 |= 0x1 << 3;
+    SPI2 -> CR1 &= ~(0x3 << 4);
+    SPI2 -> CR1 |= SPI_CR1_SPE;
 
     enable_sd_card(); // pull sd cs low
     send_cmd(CMD0, 0, 0x95);
@@ -107,12 +121,106 @@ int sd_card_init_sequance() {
     enable_sd_card();
     send_cmd(CMD58, 0x0, 0x1);
     r1 = wait_for_response(100);
-    int ccs = wait_for_response(100) && 0x1 << 6;
+    wait_for_response(100);
+    wait_for_response(100);
+    wait_for_response(100);
+    wait_for_response(100);
     disable_sd_card();
 
     if (r1 != 0x0) { return EXIT_FAILURE; }
 
+    // enable_sd_card();
+    // r1 = send_byte(0xFF);
+    // send_cmd(CMD16, 512, 0);
+    // r1 = wait_for_response(100);
+    // disable_sd_card();
+
+    int write_data[10] = {23, 17, 97, 46, 0, 62, 35, 10, 150, 2};
+    int r_data[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    r1 = write_game_data(write_data);
+    if(r1 != 0x0) { return EXIT_FAILURE; }
+
+    send_byte(0xFF);
+
+    r1 = read_data(r_data);
+    if(r1 != 0x0) { return EXIT_FAILURE;}
+
     SPI2 -> CR1 |= SPI_CR1_SSI;
 
+    for(int i = 0; i < 10; i++) {
+        if(r_data[i] != write_data[i]) { return EXIT_FAILURE; }
+    }
+
     return EXIT_SUCCESS;
+}
+
+int write_game_data(int data[10]) {
+
+    int r1 = 0x0;
+
+    enable_sd_card();
+
+    r1 = send_byte(0xFF);
+
+    send_cmd(CMD24, 0x00000200, 0xFF);
+    r1 = wait_for_response(8);
+
+    if(r1 != 0) { return r1; }
+    
+    send_byte(0xFE);
+
+    for(int i = 0; i < 10; i++) {
+        send_data(data[i]);
+    }
+
+    for(int i = 0; i < 502; i++) {
+        send_data(0xFF);
+    }
+
+    send_byte(0x0);
+    send_byte(0x0);
+
+    r1 = wait_for_response(100);
+
+    if((r1 & 0x1F) != 0x05) { return r1; }
+
+    while(send_byte(0xFF) != 0xFF);
+
+    disable_sd_card();
+
+    return 0;
+}
+
+int read_data(int data[10]) {
+
+    int r1 = 0x0;
+
+    enable_sd_card();
+
+    send_byte(0xFF);
+
+    send_cmd(CMD17, 0x00000200, 0x0);
+    r1 = wait_for_response(100);
+
+    if(r1 != 0x0) { return r1; }
+
+    while(wait_for_response(100) != 0xFE);
+
+    for(int i = 0; i < 10; i++) {
+        data[i] = send_byte(0xFF);
+    }
+
+    for(int i = 0; i < 502; i++) {
+        send_byte(0xFF);
+    }
+
+    send_byte(0xFF);
+    send_byte(0xFF);
+
+    while(send_byte(0xFF) != 0xFF);
+
+    disable_sd_card();
+
+    return 0;
 }
