@@ -5,13 +5,11 @@
 #include "tty.h"
 #include "lcd.h"
 #include "tft_display.h"
+#include "spi.h"
 
 
+extern void init_spi2_sd_stm32();
 extern void internal_clock();
-extern int sd_card_init_sequance();
-extern int wait_for_response(int length);
-extern void init_spi2_sd_stm32(char isPlayerOne);
-int send_hit(uint8_t coords);
 extern void nano_wait(unsigned int n);
 
 char keymap[16] = {
@@ -23,26 +21,22 @@ char keymap[16] = {
 
 uint8_t col = 0;
 
-
-
 int main() {
 
     RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
     GPIOC -> MODER |= 0x5 << 12;
 
+    GPIOC -> ODR &= ~(0x3 << 6);
+
     internal_clock();
     
-    init_spi2_sd_stm32(0);
+    init_spi2_sd_stm32();
     
-    int response = 0xff;
+    uint8_t response = 0;
 
-    while(response == 0xff) {
-        response = wait_for_response(100);
-    }
+    response = send_hit(1);
 
-    send_hit(1);
-    
-    if (response == 1) {
+    if(response == 1) {
         GPIOC -> ODR |= 0x1 << 6;
     } else {
         GPIOC -> ODR |= 0x1 << 7;

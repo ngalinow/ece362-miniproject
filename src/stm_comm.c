@@ -1,19 +1,13 @@
 #include "stm32f0xx.h"
+#include "spi.h"
 #include <stdlib.h>
-#include <stdbool.h>
 #include <stdio.h>
 
 #define HIT 1
 #define MISS 2
 #define NO_RESPONSE 0
 
-void enable_receive() {
-    SPI2 -> CR1 &= ~SPI_CR1_SSI;
-}
-
-void disable_receive() {
-    SPI2 -> CR1 |= SPI_CR1_SSI;
-}
+extern void nano_wait(unsigned int n);
 
 void enable_send() {
     GPIOB -> ODR &= ~(0x1 << 3);
@@ -23,16 +17,26 @@ void disable_send() {
     GPIOB -> ODR |= 0x1 << 3;
 }
 
-
-extern uint8_t send_byte(uint8_t b);
-
-extern int wait_for_response(int length);
+uint8_t send_byte_c(uint8_t b) {
+    while((SPI2->SR & SPI_SR_TXE) == 0);
+    *((volatile uint8_t*)&(SPI2->DR)) = b;
+    int value = 0xff;
+    int count = 0;
+    while((SPI2->SR & SPI_SR_RXNE) != SPI_SR_RXNE && count < 100) {
+        count++;
+        nano_wait(100);
+    }
+        value = *(volatile uint8_t *)&(SPI2->DR);
+    while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
+    return value;
+}
 
 void init_spi2_sd_stm32() {
     
     RCC -> APB1ENR |= RCC_APB1ENR_SPI2EN;
     RCC -> AHBENR |= RCC_AHBENR_GPIOBEN;
 
+    // PB12 nss
     // PB13 sck
     // PB14 miso
     // PB15 mosi
@@ -55,38 +59,24 @@ void init_spi2_sd_stm32() {
 
 // function that will be used to send a hit command to the other player
 // returns 1 if hit, 2 if missed, 0 if something went wrong
-int send_hit(uint8_t coords) {
+uint8_t send_hit(uint8_t coords) {
 
     uint8_t response = 0xff;
 
     enable_send();
-    enable_receive();
-
-    response = send_byte(coords);
-
-    disable_receive();
+    response = send_byte_c(coords);
     disable_send();
 
-     if(response == HIT) {
-        return 1;
-    } else if (response == MISS) {
-        return 2;
-    } else {
-        return 0;
-    }
+    return response;
 }
 
-int waiting(bool isPlayerOne) {
+uint8_t waiting() {
 
-    uint8_t response = 0xFF;
-
-    if(isPlayerOne) {
-        disable_send();
-        enable_receive();
-
-        
-
-    } else {
-
-    }
+    uint8_t response = 0x0;
+    while((SPI2->SR & SPI_SR_RXNE) != 1);
+    response = *(volatile uint8_t *)&(SPI2->DR);
+    while((SPI2->SR & SPI_SR_TXE) == 0);
+    *((volatile uint8_t*)&(SPI2->DR)) = response;
+    while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
+    return response;
 }

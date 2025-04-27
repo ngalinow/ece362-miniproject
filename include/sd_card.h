@@ -33,7 +33,7 @@ char row_data[10][10];
 #define CMD55    (0x40+55)      /* APP_CMD */
 #define CMD58    (0x40+58)      /* READ_OCR */
 
-uint8_t sent_byte(uint8_t b);
+uint8_t sent_byte_s(uint8_t b);
 void send_cmd(uint8_t cmd, uint32_t args, uint8_t crc);
 
 

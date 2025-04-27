@@ -14,7 +14,7 @@ void disable_sd_card() {
 }
 
 // sends one byte of information and captures what the SD card sends back
-uint8_t send_byte(uint8_t b)
+uint8_t send_byte_s(uint8_t b)
 {
     while((SPI2->SR & SPI_SR_TXE) == 0);
     *((volatile uint8_t*)&(SPI2->DR)) = b;
