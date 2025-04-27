@@ -12,8 +12,6 @@
 
 
 
-
-
 // Initialize player with empty boards and ships
  void initializePlayer(Player *player) {
     initializeBoard(player->board);
@@ -79,27 +77,27 @@ bool placeShip(Player *player, int shipIndex, int x, int y, bool isHorizontal) {
 
 
 // Print the board with proper formatting
-void printBoard(char board[BOARD_SIZE][BOARD_SIZE], bool showShips) {
-    // Print column headers
-    printf("   ");
-    for (int x = 0; x < BOARD_SIZE; x++) {
-        printf("%2d", x);
-    }
-    printf("\n");
+// void printBoard(char board[BOARD_SIZE][BOARD_SIZE], bool showShips) {
+//     // Print column headers
+//     printf("   ");
+//     for (int x = 0; x < BOARD_SIZE; x++) {
+//         printf("%2d", x);
+//     }
+//     printf("\n");
     
-    // Print each row
-    for (int y = 0; y < BOARD_SIZE; y++) {
-        printf("%2d ", y);
-        for (int x = 0; x < BOARD_SIZE; x++) {
-            char c = board[y][x];
-            if (!showShips && c != '~' && c != 'X' && c != 'O') {
-                c = '~'; // Hide ships if not showing
-            }
-            printf("%2c", c);
-        }
-        printf("\n");
-    }
-}
+//     // Print each row
+//     for (int y = 0; y < BOARD_SIZE; y++) {
+//         printf("%2d ", y);
+//         for (int x = 0; x < BOARD_SIZE; x++) {
+//             char c = board[y][x];
+//             if (!showShips && c != '~' && c != 'X' && c != 'O') {
+//                 c = '~'; // Hide ships if not showing
+//             }
+//             printf("%2c", c);
+//         }
+//         printf("\n");
+//     }
+// }
 
 // // Print current game state
 // void printGameState(Player *player, Player *opponent) {
@@ -151,7 +149,7 @@ bool makeAttack(Player *attacker, Player *defender, int x, int y) {
                     printf("\a"); // Beep when ship is sunk
                     printf("You sunk the %s ship!\n", 
                         shipSymbol == 'A' ? "Aircraft Carrier" :
-                        shipSymbol == 'B' ? "Battleship" 
+                        shipSymbol == 'B' ? "Battleship" : "Unknown Ship"
                       );
                 }
                 break;
@@ -166,7 +164,7 @@ bool makeAttack(Player *attacker, Player *defender, int x, int y) {
 
 // Check if playergame is over
 bool isGameOver(Player *player) {
-    return ->shipsRemaining == 0;
+    return player ->shipsRemaining == 0;
 }
 
 // Clear input buffer
