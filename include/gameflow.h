@@ -9,7 +9,7 @@
 #include <ctype.h>
 
 #define BOARD_SIZE 10
-#define NUM_SHIPS 5
+#define NUM_SHIPS 2
 #define MAX_PLACEMENT_ATTEMPTS 100 // 10 x 10
 
 
