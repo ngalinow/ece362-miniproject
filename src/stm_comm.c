@@ -1,5 +1,6 @@
 #include "stm32f0xx.h"
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 #define HIT 1
@@ -27,7 +28,7 @@ extern uint8_t send_byte(uint8_t b);
 
 extern int wait_for_response(int length);
 
-void init_spi2_sd_stm32(char isPlayerOne) {
+void init_spi2_sd_stm32() {
     
     RCC -> APB1ENR |= RCC_APB1ENR_SPI2EN;
     RCC -> AHBENR |= RCC_AHBENR_GPIOBEN;
@@ -40,17 +41,10 @@ void init_spi2_sd_stm32(char isPlayerOne) {
 
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
 
-    if(isPlayerOne) {
-        
-        // PB2 sd cs
-        // PB3 stm32 cs
-
-        GPIOB -> MODER |= 0x5 << 4; // PB2 and PB3 set to output for CS
-        SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
-        SPI2 -> CR1 |= SPI_CR1_SSM; // enables software slave management (SSI bit determines NSS)
-        SPI2 -> CR1 |= SPI_CR1_SSI; // controls the nss for our controller
-
-    }
+    GPIOB -> MODER |= 0x5 << 4; // PB2 and PB3 set to output for CS
+    SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
+    SPI2 -> CR1 |= SPI_CR1_SSM; // enables software slave management (SSI bit determines NSS)
+    SPI2 -> CR1 |= SPI_CR1_SSI; // controls the nss for our controller
 
     SPI2 -> CR1 |= 0x7 << 3; // baud rate at slowest (sclk speed set to 187.5 KHz) 
     SPI2 -> CR2 |= 0x7 << 8; // sets data to 8 bits (1 byte per transaction)
@@ -72,12 +66,27 @@ int send_hit(uint8_t coords) {
 
     disable_receive();
     disable_send();
-    
+
      if(response == HIT) {
         return 1;
     } else if (response == MISS) {
         return 2;
     } else {
         return 0;
+    }
+}
+
+int waiting(bool isPlayerOne) {
+
+    uint8_t response = 0xFF;
+
+    if(isPlayerOne) {
+        disable_send();
+        enable_receive();
+
+        
+
+    } else {
+
     }
 }
