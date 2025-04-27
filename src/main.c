@@ -9,6 +9,9 @@
 
 extern void internal_clock();
 extern int sd_card_init_sequance();
+extern int wait_for_response(int length);
+extern void init_spi2_sd_stm32(char isPlayerOne);
+int send_hit(uint8_t coords);
 extern void nano_wait(unsigned int n);
 
 char keymap[16] = {
@@ -23,18 +26,29 @@ uint8_t col = 0;
 
 
 int main() {
+
+    RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
+    GPIOC -> MODER |= 0x5 << 12;
+
     internal_clock();
-    init_spi_sd();
+    
+    init_spi2_sd_stm32(0);
+    
+    int response = 0xff;
 
-    // enable_ports();
-    // setup_grid();
-    // setup_tim7();
-
-    if(sd_card_init_sequance() == 1) {
-        return EXIT_SUCCESS;
-    } else {
-        return EXIT_FAILURE;
+    while(response == 0xff) {
+        response = wait_for_response(100);
     }
+
+    send_hit(1);
+    
+    if (response == 1) {
+        GPIOC -> ODR |= 0x1 << 6;
+    } else {
+        GPIOC -> ODR |= 0x1 << 7;
+    }
+    
+    return EXIT_SUCCESS;
 }
 
 

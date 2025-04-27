@@ -14,20 +14,18 @@ void disable_receive() {
     SPI2 -> CR1 |= SPI_CR1_SSI;
 }
 
-uint8_t send_byte(uint8_t b)
-{
-    while((SPI2->SR & SPI_SR_TXE) == 0);
-    *((volatile uint8_t*)&(SPI2->DR)) = b;
-    int value = 0xff;
-    int count = 0;
-    while((SPI2->SR & SPI_SR_RXNE) != SPI_SR_RXNE && count < 100) {
-        count++;
-        nano_wait(100);
-    }
-        value = *(volatile uint8_t *)&(SPI2->DR);
-    while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
-    return value;
+void enable_send() {
+    GPIOB -> ODR &= ~(0x1 << 3);
 }
+
+void disable_send() {
+    GPIOB -> ODR |= 0x1 << 3;
+}
+
+
+extern uint8_t send_byte(uint8_t b);
+
+extern int wait_for_response(int length);
 
 void init_spi2_sd_stm32(char isPlayerOne) {
     
@@ -63,16 +61,23 @@ void init_spi2_sd_stm32(char isPlayerOne) {
 
 // function that will be used to send a hit command to the other player
 // returns 1 if hit, 2 if missed, 0 if something went wrong
-int send_hit(const char coords[4]) {
+int send_hit(uint8_t coords) {
 
-    int response;
-    int hit;
+    uint8_t response = 0xff;
 
-     if(response == hit) {
+    enable_send();
+    enable_receive();
+
+    response = send_byte(coords);
+
+    disable_receive();
+    disable_send();
+    
+     if(response == HIT) {
         return 1;
-    } else {
+    } else if (response == MISS) {
         return 2;
+    } else {
+        return 0;
     }
-
-    return 0;
 }
