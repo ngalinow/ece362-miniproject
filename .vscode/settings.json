@@ -1,7 +1,7 @@
 {
     "files.associations": {
         "stm32f0xx.h": "c",
-        "sd_card.h": "c",
-        "string.h": "c"
+        "stdbool.h": "c",
+        "stdint.h": "c"
     }
 }
