@@ -23,10 +23,9 @@ uint8_t col = 0;
 
 int main() {
     internal_clock();
-    // enable_ports();
-    // setup_grid();
-    // setup_tim7();
-    color_state(4);
+    enable_ports();
+    setup_grid();
+    setup_tim7();
 }
 
 

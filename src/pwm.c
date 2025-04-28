@@ -2,29 +2,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-
-// tim1_ch1 PA8
-// tim1_ch2 PA9
-// tim1_ch3 PA10
-// tim1_ch4 PA11
-
-//AF2
-
-//110
 void init_tim1() {
     RCC -> AHBENR |= RCC_AHBENR_GPIOAEN;
     RCC -> APB2ENR |= RCC_APB2ENR_TIM1EN;
-
     GPIOA -> MODER |= 0xAA << 16;
     GPIOA -> AFR[1] |= 0x222;
     TIM1 -> BDTR |= TIM_BDTR_MOE;
     TIM1 -> PSC = 0;
     TIM1 -> ARR = 2400 - 1;
-
     TIM1 -> CCMR1 |= 0x6 << 4;
     TIM1 -> CCMR1 |= 0x6 << 12;
     TIM1 -> CCMR2 |= 0x6 << 4;
-
     TIM1 -> CCER |= 0x111;
 }
 
@@ -37,10 +25,8 @@ void stop_tim1() {
 }
 
 void color_state(uint8_t state) {
-
     init_tim1();
     start_tim1();
-
     switch (state) {
         // game is not running
         case 1:
@@ -67,7 +53,4 @@ void color_state(uint8_t state) {
             TIM1 -> CCR3 = 2400;
             break;
     }
-
-    // start_tim1();
-
 }
