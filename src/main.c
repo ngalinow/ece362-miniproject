@@ -20,7 +20,6 @@ char keymap[16] = {
 };
 
 uint8_t col = 0;
-uint8_t ship_locations[100];
 
 int main() {
     internal_clock();
