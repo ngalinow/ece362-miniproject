@@ -44,25 +44,7 @@ void send_cmd_s(uint8_t cmd, uint32_t args, uint8_t crc) {
     send_byte_s(crc);
 }
 
-void init_spi2_sd_stm32() {
-    RCC -> APB1ENR |= RCC_APB1ENR_SPI2EN;
-    RCC -> AHBENR |= RCC_AHBENR_GPIOBEN;
-    // PB12 nss
-    // PB13 sck
-    // PB14 miso
-    // PB15 mosi
-    GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
-    SPI2 -> CR1 &= ~SPI_CR1_SPE;
-    GPIOB -> MODER |= 0x5 << 4; // PB2 and PB3 set to output for CS
-    // disable_send();
-    SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
-    SPI2 -> CR1 &= ~SPI_CR1_CPOL; 
-    SPI2 -> CR1 &= ~SPI_CR1_CPHA;
-    SPI2 -> CR1 |= 0x7 << 3; // baud rate at slowest (sclk speed set to 187.5 KHz) 
-    SPI2 -> CR2 |= 0x7 << 8; // sets data to 8 bits (1 byte per transaction)
-    SPI2 -> CR2 |= SPI_CR2_FRXTH; // lets us know we have our byte ready to read (one byte)
-    SPI2 -> CR1 |= SPI_CR1_SPE;
-}
+extern void init_spi2_sd_stm32();
 
 
 

@@ -6,6 +6,7 @@
 #include "tty.h"
 #include "lcd.h"
 #include "sd_card.h"
+#include "spi.h"
 #include "tft_display.h"
 
 extern void color_state();
@@ -23,9 +24,10 @@ uint8_t col = 0;
 
 int main() {
     internal_clock();
-    enable_ports();
-    setup_grid();
-    setup_tim7();
+    return test_SD();
+    // enable_ports();
+    // setup_grid();
+    // setup_tim7();
 }
 
 

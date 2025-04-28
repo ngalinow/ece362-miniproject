@@ -77,7 +77,7 @@ uint8_t send_hit(uint8_t coords) {
     enable_send();
     response = send_byte_c(coords);
     nano_wait(100000);
-    if(response = 0xAA) {
+    if(response == 0xAA) {
         response = send_byte_c(0xFF);
     } else {
         return 0;
