@@ -24,7 +24,6 @@ uint8_t ship_locations[100];
 
 int main() {
     internal_clock();
-    return test_stmComm_waiting();
 }
 
 

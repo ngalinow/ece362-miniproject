@@ -71,11 +71,12 @@ void init_spi2_sd_stm32() {
 // function that will be used to send a hit command to the other player
 // returns 1 if hit, 2 if missed, 0 if something went wrong
 uint8_t send_hit(uint8_t coords) {
+    volatile uint32_t temp = SPI2 -> SR;
     uint8_t response = 0xff;
-    nano_wait(10000);
+    nano_wait(100000);
     enable_send();
     response = send_byte_c(coords);
-    nano_wait(10000);
+    nano_wait(100000);
     if(response = 0xAA) {
         response = send_byte_c(0xFF);
     } else {
@@ -94,7 +95,7 @@ uint8_t waiting(uint8_t game_data[100]) {
     enable_slaveMode();
     uint8_t response = 0xaa;
     uint8_t return_value = 0;
-    uint8_t location;
+    uint8_t location = 0;
     *((volatile uint8_t*)&(SPI2->DR)) = response;
     while((SPI2->SR & SPI_SR_RXNE) == 0);
     response = *(volatile uint8_t *)&(SPI2->DR);
@@ -133,6 +134,8 @@ int test_stmComm_sendHit() {
         GPIOC -> ODR |= 0x1 << 8;
     }
 
+    nano_wait(100000);
+
     response = 0;
     response = send_hit((uint8_t) 28);
 
@@ -148,6 +151,8 @@ int test_stmComm_sendHit() {
 int test_stmComm_waiting() {
     RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
     GPIOC -> MODER |= 0x55 << 12;
+
+    init_spi2_sd_stm32();
 
     uint8_t game_data[100];
     uint8_t response = 0;
