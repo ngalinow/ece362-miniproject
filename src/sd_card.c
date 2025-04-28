@@ -21,7 +21,12 @@ void send_data(char b) {
 }
 
 // sends one byte of information and captures what the SD card sends back
+<<<<<<< HEAD
 uint8_t send_byte_s(uint8_t b) {
+=======
+uint8_t send_byte_s(uint8_t b)
+{
+>>>>>>> stm_comm
     while((SPI2->SR & SPI_SR_TXE) == 0);
     *((volatile uint8_t*)&(SPI2->DR)) = b;
     int value = 0xff;
@@ -35,7 +40,11 @@ uint8_t send_byte_s(uint8_t b) {
     return value;
 }
 
+<<<<<<< HEAD
 void send_cmd_s(uint8_t cmd, uint32_t args, uint8_t crc) {
+=======
+void send_cmd(uint8_t cmd, uint32_t args, uint8_t crc) {
+>>>>>>> stm_comm
     send_byte_s(cmd);
     send_byte_s(args >> 24);
     send_byte_s(args >> 16);
