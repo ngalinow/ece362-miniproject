@@ -57,6 +57,7 @@ void init_spi2_sd_stm32() {
     GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
     GPIOB -> MODER |= 0x5 << 4; // PB2 and PB3 set to output for CS
+    disable_send();
     SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
     SPI2 -> CR1 &= ~SPI_CR1_CPOL; 
     SPI2 -> CR1 &= ~SPI_CR1_CPHA;
@@ -77,14 +78,17 @@ uint8_t send_hit(uint8_t coords) {
 }
 
 // wait function when the controller is waiting for the other player's move
-uint8_t waiting() {
+uint8_t waiting(uint8_t ship_locations[100]) {
     enable_slaveMode();
-    uint8_t response = 0xFF;
+    uint8_t response = 0xaa;
     *((volatile uint8_t*)&(SPI2->DR)) = response;
     while((SPI2->SR & SPI_SR_RXNE) == 0);
     response = *(volatile uint8_t *)&(SPI2->DR);
     while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
-    response = reverse_bits(response);
     disable_slaveMode();
+
+    if(ship_locations[response-1] == 1) {
+        ship_locations[response-1] = 2;
+    }
     return response;
 }
