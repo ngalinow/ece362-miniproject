@@ -5,7 +5,14 @@
 // Add function that checks the 
 
 int main()
-
 {
+    // sd card
+    // load game
+    // gameflow -> this is the start game
+}
 
+
+void gameflow()
+{
+    
 }
