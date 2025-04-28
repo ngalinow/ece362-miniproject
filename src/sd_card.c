@@ -2,10 +2,9 @@
 #include <string.h>
 #include "sd_card.h"
 #include "stm32f0xx.h"
+#include <stdbool.h>
 
 extern void nano_wait(unsigned int n);
-int write_game_data(int data[10]);
-int read_data(int data[10]);
 
 void enable_sd_card() {
     GPIOB -> ODR &= ~GPIO_ODR_2;
@@ -41,12 +40,12 @@ void send_cmd(uint8_t cmd, uint32_t args, uint8_t crc) {
     send_byte(args >> 16);
     send_byte(args >> 8);
     send_byte(args);
-    int r = send_byte(crc);
+    send_byte(crc);
 }
 
 // used after a command, waits for the sd card to respond
 // handles any timeouts
-int wait_for_response(int length) {
+uint8_t wait_for_response(int length) {
     int response = 0xff;
     for(int count = 0; count < length; count++) {
         response = send_byte(0xff);
@@ -56,129 +55,152 @@ int wait_for_response(int length) {
 }
 
 // sd card initilization sequence, refer to this http://elm-chan.org/docs/mmc/mmc_e.html
-int sd_card_init_sequance() {
+// isPlayerOne tells the program who should initialize the SD card
+// returns 1 if successful
+// returns 0 if it fails
+// returns 2 if function is called by player 2, (nothing happened)
+uint8_t sd_card_init_sequance(bool isPlayerOne) {
 
-    disable_sd_card(); // cs to high
-    
-    nano_wait(1500000); // wait for card to be fully powered
+    if(isPlayerOne) {
+        disable_sd_card(); // cs to high
+        
+        nano_wait(1500000); // wait for card to be fully powered
 
-    // 80 dummy clock cycles
-    // intilizes our SD card to SPI
-    for(int i = 0; i < 10; i++) {
-        send_byte(0xff);
-    }
+        // 80 dummy clock cycles
+        // intilizes our SD card to SPI
+        for(int i = 0; i < 10; i++) {
+            send_byte(0xff);
+        }
 
-    SPI2 -> CR1 &= ~SPI_CR1_SPE;
-    SPI2 -> CR1 |= 0x1 << 3;
-    SPI2 -> CR1 &= ~(0x3 << 4);
-    SPI2 -> CR1 |= SPI_CR1_SPE;
+        SPI2 -> CR1 &= ~SPI_CR1_SPE;
+        SPI2 -> CR1 |= 0x1 << 3;
+        SPI2 -> CR1 &= ~(0x3 << 4);
+        SPI2 -> CR1 |= SPI_CR1_SPE;
 
-    enable_sd_card(); // pull sd cs low
-    send_cmd(CMD0, 0, 0x95);
-    int r1 = wait_for_response(100);
-    disable_sd_card();
-
-    if (r1 == 0xff) { return EXIT_FAILURE; }
-
-    enable_sd_card();
-    send_cmd(CMD55, 0, 0x1);
-    r1 = wait_for_response(100);
-    if(r1 > 0x1) { return EXIT_FAILURE; }
-    disable_sd_card();
-
-    enable_sd_card();
-    send_cmd(CMD8, 0x1aa, 0x87);
-    r1 = wait_for_response(100);
-    wait_for_response(100);
-    wait_for_response(100);
-    int r7_1 = wait_for_response(100) & 0x01;
-    int r7_2 = wait_for_response(100) & 0xff;
-    int r7 = (r7_1 << 8) + r7_2;
-    disable_sd_card();
-    if(r7 != 0x1AA) { return EXIT_FAILURE; }
-    
-    while(r1 != 0x0) {
-        enable_sd_card();
-        send_cmd(CMD55, 0x40000000, 0x01);
-        r1 = wait_for_response(100);
-        send_cmd(CMD41, 0x40000000, 0x01);
-        r1 = wait_for_response(100);
+        enable_sd_card(); // pull sd cs low
+        send_cmd(CMD0, 0, 0x95);
+        int r1 = wait_for_response(100);
         disable_sd_card();
-    }   
 
-    if(r1 != 0x0) { return EXIT_FAILURE; }
+        if (r1 == 0xff) {return 0;}
 
-    enable_sd_card();
-    send_cmd(CMD58, 0x0, 0x1);
-    r1 = wait_for_response(100);
-    wait_for_response(100);
-    wait_for_response(100);
-    wait_for_response(100);
-    wait_for_response(100);
-    disable_sd_card();
+        enable_sd_card();
+        send_cmd(CMD55, 0, 0x1);
+        r1 = wait_for_response(100);
+        if(r1 > 0x1) {return 0;}
+        disable_sd_card();
 
-    if (r1 != 0x0) { return EXIT_FAILURE; }
+        enable_sd_card();
+        send_cmd(CMD8, 0x1aa, 0x87);
+        r1 = wait_for_response(100);
+        wait_for_response(100);
+        wait_for_response(100);
+        int r7_1 = wait_for_response(100) & 0x01;
+        int r7_2 = wait_for_response(100) & 0xff;
+        int r7 = (r7_1 << 8) + r7_2;
+        disable_sd_card();
+        if(r7 != 0x1AA) {return 0;}
+        
+        while(r1 != 0x0) {
+            enable_sd_card();
+            send_cmd(CMD55, 0x40000000, 0x01);
+            r1 = wait_for_response(100);
+            send_cmd(CMD41, 0x40000000, 0x01);
+            r1 = wait_for_response(100);
+            disable_sd_card();
+        }   
 
-    return EXIT_SUCCESS;
+        if(r1 != 0x0) {return 0;}
+
+        enable_sd_card();
+        send_cmd(CMD58, 0x0, 0x1);
+        r1 = wait_for_response(100);
+        wait_for_response(100);
+        wait_for_response(100);
+        wait_for_response(100);
+        wait_for_response(100);
+        disable_sd_card();
+
+        if (r1 != 0x0) {return 0;}
+        return 1;
+    } else {
+        return 2;
+    }
 }
 
-int write_game_data(int data[100]) {
+uint8_t write_game_data(uint8_t data[100], bool isPlayerOne) {
 
-    int r1 = 0x0;
+    uint32_t address = 0;
+
+    if(isPlayerOne) {
+        address = 0x00000200;
+    } else {
+        address = 0x00000400;
+    }
+
+    uint8_t r1 = 0x0;
 
     enable_sd_card();
 
     r1 = send_byte(0xFF);
 
-    send_cmd(CMD24, 0x00000200, 0xFF);
+    send_cmd(CMD24, address, 0xFF);
     r1 = wait_for_response(8);
 
-    if(r1 != 0) { return r1; }
+    if(r1 != 0) {return 0;}
     
     send_byte(0xFE);
 
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 100; i++) {
         send_data(data[i]);
     }
 
-    for(int i = 0; i < 502; i++) {
+    for(int i = 0; i < 412; i++) {
         send_data(0xFF);
     }
 
-    send_byte(0x0);
-    send_byte(0x0);
+    send_byte(0x00);
+    send_byte(0x00);
 
     r1 = wait_for_response(100);
 
-    if((r1 & 0x1F) != 0x05) { return r1; }
+    if((r1 & 0x1F) != 0x05) {return 0;}
 
     while(send_byte(0xFF) != 0xFF);
 
     disable_sd_card();
 
-    return 0;
+    return 1;
 }
 
-int read_data(int data[100]) {
+uint8_t read_game_data(uint8_t data[100], bool isPlayerOne) {
 
-    int r1 = 0x0;
+    uint32_t address = 0;
+
+    if(isPlayerOne) {
+        address = 0x00000200;
+    } else {
+        address = 0x00000400;
+    }
+
+    uint8_t r1 = 0x0;
 
     enable_sd_card();
 
     send_byte(0xFF);
 
-    send_cmd(CMD17, 0x00000200, 0x0);
+    send_cmd(CMD17, address, 0x0);
     r1 = wait_for_response(100);
 
-    if(r1 != 0x0) { return r1; }
+    if(r1 != 0x0) {return 0;}
 
     while(wait_for_response(100) != 0xFE);
 
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 100; i++) {
         data[i] = send_byte(0xFF);
     }
 
-    for(int i = 0; i < 502; i++) {
+    for(int i = 0; i < 412; i++) {
         send_byte(0xFF);
     }
 
@@ -189,5 +211,5 @@ int read_data(int data[100]) {
 
     disable_sd_card();
 
-    return 0;
+    return 1;
 }
