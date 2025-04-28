@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <math.h>
 #include "tty.h"
 #include "lcd.h"
 #include "tft_display.h"
@@ -42,7 +43,7 @@ void init_spi1_slow(void) {
     RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
    
     GPIOB->MODER &= ~((0b11 << (3 * 2)) | (0b11 << (4 * 2)) | (0b11 << (5 * 2)));
-    GPIOB->MODER |= ((0b10 << (3 * 2)) | (0b10 << (4 * 2)) | (0b10 << (5 * 2)));; 
+    GPIOB->MODER |= ((0b10 << (3 * 2)) | (0b10 << (4 * 2)) | (0b10 << (5 * 2)));;
     GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL3 | GPIO_AFRL_AFSEL4 | GPIO_AFRL_AFSEL5);
    
     SPI1->CR1 &= ~SPI_CR1_BR;
@@ -63,7 +64,7 @@ void init_spi1_slow(void) {
 
  void init_lcd_spi() {
     RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
-    GPIOB -> MODER |= GPIO_MODER_MODER8_0 | GPIO_MODER_MODER11_0 | GPIO_MODER_MODER10_0; /// change to PB 10 instead of 14
+    GPIOB -> MODER |= GPIO_MODER_MODER8_0 | GPIO_MODER_MODER11_0 | GPIO_MODER_MODER14_0;
     init_spi1_slow();
     sdcard_io_high_speed();
  }
@@ -94,15 +95,23 @@ void draw_grid() {
 
 void load_shots(uint8_t game_data){
   for(int looper = 0; looper < 100; looper++) {
-    game_data[looper] 
-  }
-  if(hit>0){
-    LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
-    LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
-    }
-    else if(hit==0){
-      LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+    int shoot = game_data[looper] & 1;      // LSB checks if shot
+    int hit1 = (game_data[looper] >> 1) & 1;  // 2nd LSB checks if hit
 
+    int coly1 = looper % 10;        // column 
+    int rowx1 = floor(looper / 10);   // row
+
+
+    if(shoot == 0) {
+    }
+    else if(hit1 == 1){
+      LCD_DrawLine(240-(rowx*24), 32*coly1, 216-(rowx*24), 32*(coly1+1), 0xF800);
+      LCD_DrawLine(216-(rowx*24), 32*coly1, 240-(rowx*24), 32*(coly1+1), 0xF800);  
+    }
+    else if(hit1 == 0){
+      LCD_Circle(228-(rowx*24), 32*coly1 + 16, 10, 1, 0X7D7C);
+    }
+  }
 
 }
 
