@@ -7,29 +7,6 @@ extern void nano_wait(unsigned int n);
 int write_game_data(int data[10]);
 int read_data(int data[10]);
 
-void init_spi_sd() {
-    RCC -> APB1ENR |= RCC_APB1ENR_SPI2EN;
-    RCC -> AHBENR |= RCC_AHBENR_GPIOBEN;
-
-    // 12 NSS
-    // 13 sck
-    // 14 miso
-    // 15 mosi
-
-    GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
-    GPIOB -> MODER |= 0x1 << 4; // PB2 set to output for turning the SD card on / off
-    
-    SPI2 -> CR1 &= ~SPI_CR1_SPE;
-
-    SPI2 -> CR1 |= 0x7 << 3; // baud rate at slowest (sclk speed set to 187.5 KHz) 
-    SPI2 -> CR2 |= 0x7 << 8; // sets data to 8 bits (1 byte per transaction)
-
-    SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
-    SPI2 -> CR2 |= SPI_CR2_FRXTH; // lets us know we have our byte ready to read
-    
-    SPI2 -> CR1 |= SPI_CR1_SPE;
-}
-
 void enable_sd_card() {
     GPIOB -> ODR &= ~GPIO_ODR_2;
 }
@@ -80,8 +57,6 @@ int wait_for_response(int length) {
 
 // sd card initilization sequence, refer to this http://elm-chan.org/docs/mmc/mmc_e.html
 int sd_card_init_sequance() {
-
-    SPI2 -> CR1 &= ~SPI_CR1_SSI;
 
     disable_sd_card(); // cs to high
     
@@ -144,33 +119,10 @@ int sd_card_init_sequance() {
 
     if (r1 != 0x0) { return EXIT_FAILURE; }
 
-    // enable_sd_card();
-    // r1 = send_byte(0xFF);
-    // send_cmd(CMD16, 512, 0);
-    // r1 = wait_for_response(100);
-    // disable_sd_card();
-
-    int write_data[10] = {23, 17, 97, 46, 0, 62, 35, 10, 150, 2};
-    int r_data[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    r1 = write_game_data(write_data);
-    if(r1 != 0x0) { return EXIT_FAILURE; }
-
-    send_byte(0xFF);
-
-    r1 = read_data(r_data);
-    if(r1 != 0x0) { return EXIT_FAILURE;}
-
-    SPI2 -> CR1 |= SPI_CR1_SSI;
-
-    for(int i = 0; i < 10; i++) {
-        if(r_data[i] != write_data[i]) { return EXIT_FAILURE; }
-    }
-
     return EXIT_SUCCESS;
 }
 
-int write_game_data(int data[10]) {
+int write_game_data(int data[100]) {
 
     int r1 = 0x0;
 
@@ -207,7 +159,7 @@ int write_game_data(int data[10]) {
     return 0;
 }
 
-int read_data(int data[10]) {
+int read_data(int data[100]) {
 
     int r1 = 0x0;
 
