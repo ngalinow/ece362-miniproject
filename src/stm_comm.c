@@ -18,6 +18,7 @@ void disable_send() {
 }
 
 void enable_slaveMode() {
+    volatile uint32_t temp = SPI2 -> SR;
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
     SPI2 -> CR1 &= ~SPI_CR1_MSTR;
     SPI2 -> CR1 |= SPI_CR1_SPE;
