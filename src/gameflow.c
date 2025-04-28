@@ -61,19 +61,20 @@ uint8_t coord_to_index(uint8_t x, uint8_t y) {
 
 
 // Check if ship placement is valid
-bool is_valid_placement(uint8_t x, uint8_t y, uint8_t length, bool is_horizontal) {
+bool is_valid_placement(uint8_t x, uint8_t y, uint8_t length, bool is_horizontal, bool is_player_one) {
     if (x >= BOARD_SIZE || y >= BOARD_SIZE) return false;
-    
+
+    // Check if ship fits on the board
     if (is_horizontal) {
         if (x + length > BOARD_SIZE) return false;
         for (uint8_t i = x; i < x + length; i++) {
-            uint8_t idx = coord_to_index(i, y);
-            if (game_data[idx] & 0x04) return false;  // Check if ship already exists
+            uint8_t idx = y * 10 + i;
+            if (game_data[idx] & 0x04) return false; // Check "our ship" bit
         }
     } else {
         if (y + length > BOARD_SIZE) return false;
         for (uint8_t i = y; i < y + length; i++) {
-            uint8_t idx = coord_to_index(x, i);
+            uint8_t idx = i * 10 + x;
             if (game_data[idx] & 0x04) return false;
         }
     }
@@ -104,72 +105,29 @@ void place_ship(uint8_t x, uint8_t y, bool is_horizontal) {
     }
 }
 
-void process_attack(uint8_t x, uint8_t y) {
-    uint8_t idx = coord_to_index(x, y);
-    
-    // Mark that we shot here
-    game_data[idx] |= 0x01;
-    
-    // Check if we hit something
-    bool hit = rand() % 4 == 0;  // 25% chance for demo
-    
-    if (hit) {
-        game_data[idx] |= 0x02;  // Set hit bit
-        // In real game, check if sunk here
-    }
-    
-    // Check if game over (simplified)
-    static uint8_t hits = 0;
-    if (hit) hits++;
-    if (hits >= 17) {  // Total ship squares (5+4+3+3+2)
-        game_state = STATE_GAME_OVER;
+uint8_t process_attack(uint8_t x, uint8_t y, bool is_player_one) {
+    uint8_t idx = y * 10 + x;
+    uint8_t *target_data = &game_data[idx];
+
+    // Check if already attacked
+    if (*target_data & 0x01) return 0; // Already shot here
+
+    // Mark as attacked (bit 0)
+    *target_data |= 0x01;
+
+    // Check for hit (bit 2 = ship present)
+    if (*target_data & 0x04) {
+        *target_data |= 0x02; // Set hit bit (bit 1)
+        *target_data |= 0x08; // Set "ship hit" bit (bit 3)
+
+        // Check if ship is sunk (requires tracking ship segments)
+        if (check_ship_sunk(x, y, is_player_one)) {
+            return 2; // Ship sunk
+        }
+        return 1; // Hit
+    } else {
+        return 0; // Miss
     }
 }
-
-
-// void handle_keypress(uint8_t key) {
-//     // Only handle digits 0-9
-//     if (key > 9) return;
-    
-//     // Store input in buffer
-//     input_buffer[input_index++] = key;
-    
-//     // Process based on game state
-//     switch (game_state) {
-//         case STATE_PLACING_SHIPS:
-//             if (input_index == 3) {  // Expecting X, Y, Orientation (0=H, 1=V)
-//                 uint8_t x = input_buffer[0];
-//                 uint8_t y = input_buffer[1];
-//                 bool is_horizontal = (input_buffer[2] == 0);
-                
-//                 if (is_valid_placement(x, y, ships[current_ship_index].type, is_horizontal)) {
-//                     place_ship(x, y, is_horizontal);
-//                 }
-//                 input_index = 0;
-//             }
-//             break;
-            
-//         case STATE_ATTACKING:
-//             if (input_index == 2) {  // Expecting X, Y
-//                 uint8_t x = input_buffer[0];
-//                 uint8_t y = input_buffer[1];
-                
-//                 uint8_t idx = coord_to_index(x, y);
-//                 if (!(game_data[idx] & 0x01)) {  // Check if already shot here
-//                     process_attack(x, y);
-//                 }
-//                 input_index = 0;
-//             }
-//             break;
-            
-//         case STATE_GAME_OVER:
-//             // Reset game if any key pressed
-//             initialize_game_data();
-//             input_index = 0;
-//             break;
-//     }
-// }
-
-
 
 
