@@ -23,24 +23,7 @@ uint8_t col = 0;
 
 
 int main() {
-    internal_clock();
-    init_spi_sd();
-
-    RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
-
-    GPIOC -> MODER |= 0x5 << 12;
-
-    // enable_ports();
-    // setup_grid();
-    // setup_tim7();
-
-    if(sd_card_init_sequance() == EXIT_SUCCESS) {
-        GPIOC -> ODR |= 0x1 << 6;
-        return EXIT_SUCCESS;
-    } else {
-        GPIOC -> ODR |= 0x1 << 7;
-        return EXIT_FAILURE;
-    }
+    
 }
 
 
