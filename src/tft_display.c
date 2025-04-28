@@ -42,7 +42,7 @@ void init_spi1_slow(void) {
     RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
    
     GPIOB->MODER &= ~((0b11 << (3 * 2)) | (0b11 << (4 * 2)) | (0b11 << (5 * 2)));
-    GPIOB->MODER |= ((0b10 << (3 * 2)) | (0b10 << (4 * 2)) | (0b10 << (5 * 2)));;
+    GPIOB->MODER |= ((0b10 << (3 * 2)) | (0b10 << (4 * 2)) | (0b10 << (5 * 2)));; 
     GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL3 | GPIO_AFRL_AFSEL4 | GPIO_AFRL_AFSEL5);
    
     SPI1->CR1 &= ~SPI_CR1_BR;
@@ -63,7 +63,7 @@ void init_spi1_slow(void) {
 
  void init_lcd_spi() {
     RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
-    GPIOB -> MODER |= GPIO_MODER_MODER8_0 | GPIO_MODER_MODER11_0 | GPIO_MODER_MODER14_0;
+    GPIOB -> MODER |= GPIO_MODER_MODER8_0 | GPIO_MODER_MODER11_0 | GPIO_MODER_MODER10_0; /// change to PB 10 instead of 14
     init_spi1_slow();
     sdcard_io_high_speed();
  }
