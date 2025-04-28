@@ -10,11 +10,11 @@
 extern void nano_wait(unsigned int n);
 
 void enable_send() {
-    GPIOB -> ODR &= ~(0x1 << 3);
+    GPIOB -> ODR &= ~(0x1 << 1);
 }
 
 void disable_send() {
-    GPIOB -> ODR |= 0x1 << 3;
+    GPIOB -> ODR |= 0x1 << 1;
 }
 
 void enable_slaveMode() {
@@ -56,7 +56,7 @@ void init_spi2_sd_stm32() {
     // PB15 mosi
     GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
-    GPIOB -> MODER |= 0x5 << 4; // PB2 and PB3 set to output for CS
+    GPIOB -> MODER |= 0x5 << 2; // PB2 and PB3 set to output for CS
     disable_send();
     SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
     SPI2 -> CR1 &= ~SPI_CR1_CPOL; 
@@ -71,24 +71,108 @@ void init_spi2_sd_stm32() {
 // returns 1 if hit, 2 if missed, 0 if something went wrong
 uint8_t send_hit(uint8_t coords) {
     uint8_t response = 0xff;
+    nano_wait(10000);
     enable_send();
     response = send_byte_c(coords);
+    nano_wait(10000);
+    if(response = 0xAA) {
+        response = send_byte_c(0xFF);
+    } else {
+        return 0;
+    }
+    if( !(response & 0x1) && !(response & 0x2) ) {
+        response = 0;
+    }
     disable_send();
     return response;
 }
 
 // wait function when the controller is waiting for the other player's move
-uint8_t waiting(uint8_t ship_locations[100]) {
+// returns 1 if ship was hit, 2 if it was missed, 0 if error
+uint8_t waiting(uint8_t game_data[100]) {
     enable_slaveMode();
     uint8_t response = 0xaa;
+    uint8_t return_value = 0;
+    uint8_t location;
     *((volatile uint8_t*)&(SPI2->DR)) = response;
     while((SPI2->SR & SPI_SR_RXNE) == 0);
     response = *(volatile uint8_t *)&(SPI2->DR);
-    while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
-    disable_slaveMode();
-
-    if(ship_locations[response-1] == 1) {
-        ship_locations[response-1] = 2;
+    location = game_data[response - 1];
+    if(location & 0x4) {
+        response = 0x1;
+    } else {
+        response = 0x2;
     }
-    return response;
+    while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
+    *((volatile uint8_t*)&(SPI2->DR)) = response;
+    return_value = response;
+    while((SPI2->SR & SPI_SR_RXNE) == 0);
+    response = *(volatile uint8_t *)&(SPI2->DR);
+    while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
+    nano_wait(10000);
+    disable_slaveMode();
+    if(response != 0xff) {
+        return_value = 0;
+    }
+    return return_value;
+}
+
+int test_stmComm_sendHit() {
+    RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
+    GPIOC -> MODER |= 0x55 << 12;
+
+    init_spi2_sd_stm32();
+
+    uint8_t response = 0;
+    response = send_hit((uint8_t) 32);
+
+    if(response == 1) {
+        GPIOC -> ODR |= 0x1 << 6;
+    } else {
+        GPIOC -> ODR |= 0x1 << 8;
+    }
+
+    response = 0;
+    response = send_hit((uint8_t) 28);
+
+    if(response == 2) {
+        GPIOC -> ODR |= 0x1 << 7;
+    } else {
+        GPIOC -> ODR |= 0x1 << 9;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int test_stmComm_waiting() {
+    RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
+    GPIOC -> MODER |= 0x55 << 12;
+
+    uint8_t game_data[100];
+    uint8_t response = 0;
+
+    for(int i = 0; i < 100; i++) {
+        game_data[i] = 0x0;
+    }
+
+    game_data[31] = 0x04;
+
+    response = waiting(game_data);
+
+    if(response == 1) {
+        GPIOC -> ODR |= 0x1 << 6;
+    } else {
+        GPIOC -> ODR |= 0x1 << 8;
+    }
+
+    response = 0;
+    response = waiting(game_data);
+
+    if(response == 2) {
+        GPIOC -> ODR |= 0x1 << 7;
+    } else {
+        GPIOC -> ODR |= 0x1 << 9;
+    }
+
+    return EXIT_SUCCESS;
 }
