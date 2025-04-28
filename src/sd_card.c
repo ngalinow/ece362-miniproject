@@ -53,7 +53,8 @@ void init_spi2_sd_stm32() {
     // PB15 mosi
     GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
-    GPIOB -> MODER |= 0x5 << 4; // PB2 and PB3 set to output for CS
+    GPIOB -> MODER |= 0x5 << 4; // PB1 and PB2 set to output for CS
+    disable_sd_card();
     // disable_send();
     SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
     SPI2 -> CR1 &= ~SPI_CR1_CPOL; 
