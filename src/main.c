@@ -6,7 +6,7 @@
 #include "lcd.h"
 #include "tft_display.h"
 
-
+extern void color_state();
 extern void internal_clock();
 extern int sd_card_init_sequance();
 extern void nano_wait(unsigned int n);
@@ -23,9 +23,10 @@ uint8_t col = 0;
 
 int main() {
     internal_clock();
-    enable_ports();
-    setup_grid();
-    setup_tim7();
+    // enable_ports();
+    // setup_grid();
+    // setup_tim7();
+    color_state(4);
 }
 
 
