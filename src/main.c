@@ -21,10 +21,6 @@ char keymap[16] = {
 
 uint8_t col = 0;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> sd_card
 int main() {
     internal_clock();
     enable_ports();
