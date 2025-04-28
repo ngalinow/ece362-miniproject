@@ -92,7 +92,6 @@ void draw_grid() {
     }
 }
 
-// game_data [100]
 void load_shots(uint8_t game_data){
   for(int looper = 0; looper < 100; looper++) {
     game_data[looper] 
