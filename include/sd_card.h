@@ -14,7 +14,7 @@
 // bit 1: 0 - didn't hit anything, 1 - did hit something
 // bit 2: 0 - we don't have a ship there, 1 - we have a ship there
 // bit 3: 0 - our ship wasn't hit, 1 - our ship was hit
-char row_data[10][10];
+uint8_t game_data[100];
 
 // SD card commands for easy reference
 #define CMD0     (0x40+0)       /* GO_IDLE_STATE */
@@ -35,6 +35,8 @@ char row_data[10][10];
 
 uint8_t sent_byte(uint8_t b);
 void send_cmd(uint8_t cmd, uint32_t args, uint8_t crc);
-
+int sd_card_init_sequance();
+int read_data(int data[100]);
+int write_game_data(int data[100]);
 
 #endif

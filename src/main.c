@@ -10,6 +10,7 @@
 extern void internal_clock();
 extern int sd_card_init_sequance();
 extern void nano_wait(unsigned int n);
+extern int sd_card_init_sequance();
 
 char keymap[16] = {
     '1', '2', '3', 'A',
@@ -20,6 +21,10 @@ char keymap[16] = {
 
 uint8_t col = 0;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> sd_card
 int main() {
     internal_clock();
     enable_ports();
