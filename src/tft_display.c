@@ -14,7 +14,7 @@ int keys_collected = 0;
 int rowx = -1;
 int coly = -1;
 int keypad_counter = 0;
-int hit = 0; //1 means it was a hit and 0 means it was not a hit 
+int hit = 1; //1 means it was a hit and 0 means it was not a hit 
 
 
 char keypad_map[4][4] = {
@@ -92,6 +92,21 @@ void draw_grid() {
     }
 }
 
+// game_data [100]
+void load_shots(uint8_t game_data){
+  for(int looper = 0; looper < 100; looper++) {
+    game_data[looper] 
+  }
+  if(hit>0){
+    LCD_DrawLine(240-(rowx*24), 32*coly, 216-(rowx*24), 32*(coly+1), 0xF800);
+    LCD_DrawLine(216-(rowx*24), 32*coly, 240-(rowx*24), 32*(coly+1), 0xF800);  
+    }
+    else if(hit==0){
+      LCD_Circle(228-(rowx*24), 32*coly + 16, 10, 1, 0X7D7C);
+
+
+}
+
 void setup_grid() {
     internal_clock();
     setbuf(stdin,0);
@@ -99,6 +114,7 @@ void setup_grid() {
     setbuf(stderr,0);
     init_lcd_spi();
     draw_grid();
+    load_shots(game_data);
 
 }
 
