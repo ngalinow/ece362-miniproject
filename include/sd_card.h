@@ -1,6 +1,8 @@
+#include <stdint.h>
+#include <stdbool.h>
+
 #ifndef _SD_CARD_H_
 #define _SD_CARD_H_
-#include <stdint.h>
 
 // game state variables that will be loaded and saved to the SD
 // this is the 10x10 grid of battle ship with each location saved as a number
@@ -33,10 +35,9 @@ uint8_t game_data[100];
 #define CMD55    (0x40+55)      /* APP_CMD */
 #define CMD58    (0x40+58)      /* READ_OCR */
 
-uint8_t sent_byte(uint8_t b);
-void send_cmd(uint8_t cmd, uint32_t args, uint8_t crc);
-int sd_card_init_sequance();
-int read_data(int data[100]);
-int write_game_data(int data[100]);
+uint8_t sd_card_init_sequance(bool isPlayerOne);
+uint8_t write_game_data(uint8_t data[100], bool isPlayerOne);
+uint8_t read_game_data(uint8_t data[100], bool isPlayerOne);
+int test_SD();
 
 #endif

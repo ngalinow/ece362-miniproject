@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "tty.h"
 #include "lcd.h"
+#include "sd_card.h"
 #include "tft_display.h"
 
 extern void color_state();
 extern void internal_clock();
-extern int sd_card_init_sequance();
 extern void nano_wait(unsigned int n);
-extern int sd_card_init_sequance();
 
 char keymap[16] = {
     '1', '2', '3', 'A',
