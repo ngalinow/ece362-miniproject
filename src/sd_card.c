@@ -15,14 +15,6 @@ void disable_sd_card() {
     GPIOB -> ODR |= GPIO_ODR_2;
 }
 
-void enable_stm() {
-    SPI2 -> CR1 &= ~SPI_CR1_SSI;
-}
-
-void disable_stm() {
-    SPI2 -> CR1 |= SPI_CR1_SSI;
-}
-
 void send_data(char b) {
     while((SPI2->SR & SPI_SR_TXE) == 0);
     *((volatile uint8_t*)&(SPI2->DR)) = b;
@@ -65,8 +57,6 @@ int wait_for_response(int length) {
 
 // sd card initilization sequence, refer to this http://elm-chan.org/docs/mmc/mmc_e.html
 int sd_card_init_sequance() {
-
-    SPI2 -> CR1 &= ~SPI_CR1_SSI;
 
     disable_sd_card(); // cs to high
     
@@ -129,33 +119,10 @@ int sd_card_init_sequance() {
 
     if (r1 != 0x0) { return EXIT_FAILURE; }
 
-    // enable_sd_card();
-    // r1 = send_byte(0xFF);
-    // send_cmd(CMD16, 512, 0);
-    // r1 = wait_for_response(100);
-    // disable_sd_card();
-
-    int write_data[10] = {23, 17, 97, 46, 0, 62, 35, 10, 150, 2};
-    int r_data[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-    r1 = write_game_data(write_data);
-    if(r1 != 0x0) { return EXIT_FAILURE; }
-
-    send_byte(0xFF);
-
-    r1 = read_data(r_data);
-    if(r1 != 0x0) { return EXIT_FAILURE;}
-
-    SPI2 -> CR1 |= SPI_CR1_SSI;
-
-    for(int i = 0; i < 10; i++) {
-        if(r_data[i] != write_data[i]) { return EXIT_FAILURE; }
-    }
-
     return EXIT_SUCCESS;
 }
 
-int write_game_data(int data[10]) {
+int write_game_data(int data[100]) {
 
     int r1 = 0x0;
 
@@ -192,7 +159,7 @@ int write_game_data(int data[10]) {
     return 0;
 }
 
-int read_data(int data[10]) {
+int read_data(int data[100]) {
 
     int r1 = 0x0;
 
