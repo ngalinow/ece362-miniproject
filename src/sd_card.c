@@ -30,12 +30,12 @@ uint8_t send_byte_s(uint8_t b)
 }
 
 void send_cmd(uint8_t cmd, uint32_t args, uint8_t crc) {
-    send_byte(cmd);
-    send_byte(args >> 24);
-    send_byte(args >> 16);
-    send_byte(args >> 8);
-    send_byte(args);
-    send_byte(crc);
+    send_byte_s(cmd);
+    send_byte_s(args >> 24);
+    send_byte_s(args >> 16);
+    send_byte_s(args >> 8);
+    send_byte_s(args);
+    send_byte_s(crc);
 }
 
 // used after a command, waits for the sd card to respond
@@ -61,7 +61,7 @@ int sd_card_init_sequance() {
     // 80 dummy clock cycles
     // intilizes our SD card to SPI
     for(int i = 0; i < 10; i++) {
-        send_byte(0xff);
+        send_byte_s(0xff);
     }
 
     // SPI2 -> CR1 &= ~SPI_CR1_SPE;

@@ -22,26 +22,18 @@ char keymap[16] = {
 uint8_t col = 0;
 
 int main() {
-
+    internal_clock();
     RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
     GPIOC -> MODER |= 0x5 << 12;
-
-    GPIOC -> ODR &= ~(0x3 << 6);
-
-    internal_clock();
-    
+    GPIOC -> ODR &= ~(0x3 << 6); 
     init_spi2_sd_stm32();
-    
     uint8_t response = 0;
-
     response = send_hit(1);
-
-    if(response == 1) {
+    if(response == 0xff) {
         GPIOC -> ODR |= 0x1 << 6;
     } else {
         GPIOC -> ODR |= 0x1 << 7;
     }
-    
     return EXIT_SUCCESS;
 }
 
