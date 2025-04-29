@@ -11,6 +11,7 @@
 
 extern void color_state();
 extern void internal_clock();
+extern void init_spi2_sd_stm32();
 extern void nano_wait(unsigned int n);
 
 char keymap[16] = {
@@ -24,7 +25,14 @@ uint8_t col = 0;
 
 int main() {
     internal_clock();
-    return test_SD();
+    init_spi2_sd_stm32();
+
+    int value = test_SD();
+
+    nano_wait(2000000000);
+
+    value = test_stmComm_sendHit();
+    return value;
     // enable_ports();
     // setup_grid();
     // setup_tim7();

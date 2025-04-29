@@ -8,6 +8,7 @@
 #define NO_RESPONSE 0
 
 extern void nano_wait(unsigned int n);
+extern void disable_sd_card();
 
 void enable_send() {
     GPIOB -> ODR &= ~(0x1 << 1);
@@ -18,6 +19,7 @@ void disable_send() {
 }
 
 void enable_slaveMode() {
+    GPIOB -> ODR |= 0x3 < 1;
     volatile uint32_t temp = SPI2 -> SR;
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
     SPI2 -> CR1 &= ~SPI_CR1_MSTR;
@@ -56,9 +58,9 @@ void init_spi2_sd_stm32() {
     // PB14 miso
     // PB15 mosi
     GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
-    SPI2 -> CR1 &= ~SPI_CR1_SPE;
     GPIOB -> MODER |= 0x5 << 2; // PB2 and PB3 set to output for CS
-    disable_send();
+    GPIOB -> ODR |= 0x3 << 1;
+    SPI2 -> CR1 &= ~SPI_CR1_SPE;    
     SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
     SPI2 -> CR1 &= ~SPI_CR1_CPOL; 
     SPI2 -> CR1 &= ~SPI_CR1_CPHA;
@@ -71,6 +73,7 @@ void init_spi2_sd_stm32() {
 // function that will be used to send a hit command to the other player
 // returns 1 if hit, 2 if missed, 0 if something went wrong
 uint8_t send_hit(uint8_t coords) {
+    disable_sd_card();
     volatile uint32_t temp = SPI2 -> SR;
     uint8_t response = 0xff;
     nano_wait(100000);
@@ -92,6 +95,7 @@ uint8_t send_hit(uint8_t coords) {
 // wait function when the controller is waiting for the other player's move
 // returns 1 if ship was hit, 2 if it was missed, 0 if error
 uint8_t waiting(uint8_t game_data[100]) {
+    disable_sd_card();
     enable_slaveMode();
     uint8_t response = 0xaa;
     uint8_t return_value = 0;
@@ -105,8 +109,8 @@ uint8_t waiting(uint8_t game_data[100]) {
     } else {
         response = 0x2;
     }
-    while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
     *((volatile uint8_t*)&(SPI2->DR)) = response;
+    while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
     return_value = response;
     while((SPI2->SR & SPI_SR_RXNE) == 0);
     response = *(volatile uint8_t *)&(SPI2->DR);
@@ -122,8 +126,6 @@ uint8_t waiting(uint8_t game_data[100]) {
 int test_stmComm_sendHit() {
     RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
     GPIOC -> MODER |= 0x55 << 12;
-
-    init_spi2_sd_stm32();
 
     uint8_t response = 0;
     response = send_hit((uint8_t) 32);
@@ -151,8 +153,6 @@ int test_stmComm_sendHit() {
 int test_stmComm_waiting() {
     RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
     GPIOC -> MODER |= 0x55 << 12;
-
-    init_spi2_sd_stm32();
 
     uint8_t game_data[100];
     uint8_t response = 0;

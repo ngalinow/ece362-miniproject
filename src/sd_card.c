@@ -77,10 +77,10 @@ uint8_t sd_card_init_sequance(bool isPlayerOne) {
             send_byte_s(0xff);
         }
 
-        SPI2 -> CR1 &= ~SPI_CR1_SPE;
-        SPI2 -> CR1 |= 0x1 << 3;
-        SPI2 -> CR1 &= ~(0x3 << 4);
-        SPI2 -> CR1 |= SPI_CR1_SPE;
+        // SPI2 -> CR1 &= ~SPI_CR1_SPE;
+        // SPI2 -> CR1 |= 0x1 << 3;
+        // SPI2 -> CR1 &= ~(0x3 << 4);
+        // SPI2 -> CR1 |= SPI_CR1_SPE;
 
         enable_sd_card(); // pull sd cs low
         send_cmd_s(CMD0, 0, 0x95);
@@ -178,6 +178,10 @@ uint8_t write_game_data(uint8_t data[100], bool isPlayerOne) {
 
     disable_sd_card();
 
+    while((SPI2->SR & SPI_SR_RXNE) == 1) {
+        volatile uint8_t temp = *(volatile uint8_t *)&(SPI2->DR);
+    }
+
     return 1;
 }
 
@@ -222,6 +226,10 @@ uint8_t read_game_data(uint8_t data[100], bool isPlayerOne) {
 
     disable_sd_card();
 
+    while((SPI2->SR & SPI_SR_RXNE) == 1) {
+        volatile uint8_t temp = *(volatile uint8_t *)&(SPI2->DR);
+    }
+
     return 1;
 }
 
@@ -248,8 +256,6 @@ int test_SD() {
 
     bool isPlayerOne = true;
     uint8_t response = 0;
-
-    init_spi2_sd_stm32();
 
     response = sd_card_init_sequance(isPlayerOne);
 
