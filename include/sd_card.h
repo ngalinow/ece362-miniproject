@@ -35,9 +35,10 @@ uint8_t game_data[100];
 #define CMD55    (0x40+55)      /* APP_CMD */
 #define CMD58    (0x40+58)      /* READ_OCR */
 
-uint8_t sd_card_init_sequance(bool isPlayerOne);
-uint8_t write_game_data(uint8_t data[100], bool isPlayerOne);
-uint8_t read_game_data(uint8_t data[100], bool isPlayerOne);
+uint8_t sd_card_init_sequance();
+uint8_t write_game_data(uint8_t data[100]);
+uint8_t read_game_data(uint8_t data[100]);
 int test_SD();
+void full_test(bool isPlayerOne);
 
 #endif

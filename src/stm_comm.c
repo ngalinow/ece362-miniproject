@@ -2,6 +2,7 @@
 #include "spi.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #define HIT 1
 #define MISS 2
@@ -10,17 +11,33 @@
 extern void nano_wait(unsigned int n);
 extern void disable_sd_card();
 
+void SPI2_IRQHandler() {
+
+    volatile uint32_t temp;
+
+    if ((GPIOA -> IDR & GPIO_IDR_7) == 0) {
+        temp = SPI2 -> SR;
+        SPI2 -> CR1 &= ~SPI_CR1_MSTR;
+        SPI2 -> CR1 |= SPI_CR1_SPE;
+    } else {
+        temp = SPI2 -> SR;
+        SPI2 -> CR1 |= SPI_CR1_SPE;
+    }
+    (void)temp;
+    return;
+}
+
 void enable_send() {
+    GPIOA -> ODR &= ~(0x1 << 6);
     GPIOB -> ODR &= ~(0x1 << 1);
 }
 
 void disable_send() {
+    GPIOA -> ODR |= 0x1 << 6;
     GPIOB -> ODR |= 0x1 << 1;
 }
 
 void enable_slaveMode() {
-    GPIOB -> ODR |= 0x3 < 1;
-    volatile uint32_t temp = SPI2 -> SR;
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
     SPI2 -> CR1 &= ~SPI_CR1_MSTR;
     SPI2 -> CR1 |= SPI_CR1_SPE;
@@ -53,14 +70,20 @@ uint8_t send_byte_c(uint8_t b) {
 void init_spi2_sd_stm32() {
     RCC -> APB1ENR |= RCC_APB1ENR_SPI2EN;
     RCC -> AHBENR |= RCC_AHBENR_GPIOBEN;
+    RCC -> AHBENR |= RCC_AHBENR_GPIOAEN;
     // PB12 nss
     // PB13 sck
     // PB14 miso
     // PB15 mosi
     GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
     GPIOB -> MODER |= 0x5 << 2; // PB2 and PB3 set to output for CS
+    GPIOA -> MODER |= 0x1 << 12;
     GPIOB -> ODR |= 0x3 << 1;
-    SPI2 -> CR1 &= ~SPI_CR1_SPE;    
+    GPIOA -> ODR |= 0x1 << 6;
+    while( (GPIOA -> IDR & GPIO_IDR_7) == 0);
+    SPI2 -> CR1 &= ~SPI_CR1_SPE;
+    SPI2 -> CR2 |= 0x1 << 5;    
+    NVIC_EnableIRQ(SPI2_IRQn);
     SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
     SPI2 -> CR1 &= ~SPI_CR1_CPOL; 
     SPI2 -> CR1 &= ~SPI_CR1_CPHA;
@@ -74,7 +97,6 @@ void init_spi2_sd_stm32() {
 // returns 1 if hit, 2 if missed, 0 if something went wrong
 uint8_t send_hit(uint8_t coords) {
     disable_sd_card();
-    volatile uint32_t temp = SPI2 -> SR;
     uint8_t response = 0xff;
     nano_wait(100000);
     enable_send();
@@ -181,4 +203,62 @@ int test_stmComm_waiting() {
     }
 
     return EXIT_SUCCESS;
+}
+
+void full_test(bool isPlayerOne) {
+    RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
+    GPIOC -> MODER |= 0x55 << 12;
+
+    uint8_t game_data[100];
+    uint8_t response = 0;
+
+    for(int i = 0; i < 100; i++) {
+        game_data[i] = 0x0;
+    }
+
+    game_data[31] = 0x04;
+
+    while( (SPI2 -> SR & SPI_SR_MODF) == 1) {
+        volatile uint32_t temp = SPI2 -> SR;
+        nano_wait(1000);
+    }
+
+    if(isPlayerOne) {
+        nano_wait(10000000);
+        response = sd_card_init_sequance();
+    } else {
+        response = sd_card_init_sequance();
+    }
+
+    if(response != 1) {
+        GPIOC -> ODR |= 0x1 << 9;
+        return;
+    }
+
+    if(isPlayerOne) {
+        nano_wait(10000000);
+        response = send_hit(32);
+    } else {
+        response = waiting(game_data);
+    }
+
+    if (response != 1) {
+        GPIOC -> ODR |= 0x1 << 8;
+        return;
+    }
+
+    if(isPlayerOne) {
+        nano_wait(10000000);
+    } else {
+        response = write_game_data(game_data);
+    }
+
+    if (response != 1) {
+        GPIOC -> ODR |= 0x1 << 7;
+        return;
+    }
+
+    GPIOC -> ODR |= 0x1 << 6;
+
+    return;
 }

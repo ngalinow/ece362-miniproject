@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sd_card.h"
+#include "spi.h"
 #include "stm32f0xx.h"
 #include <stdbool.h>
 
@@ -44,10 +45,6 @@ void send_cmd_s(uint8_t cmd, uint32_t args, uint8_t crc) {
     send_byte_s(crc);
 }
 
-extern void init_spi2_sd_stm32();
-
-
-
 // used after a command, waits for the sd card to respond
 // handles any timeouts
 uint8_t wait_for_response(int length) {
@@ -63,89 +60,75 @@ uint8_t wait_for_response(int length) {
 // isPlayerOne tells the program who should initialize the SD card
 // returns 1 if successful
 // returns 0 if it fails
-// returns 2 if function is called by player 2, (nothing happened)
-uint8_t sd_card_init_sequance(bool isPlayerOne) {
+uint8_t sd_card_init_sequance() {
 
-    if(isPlayerOne) {
-        disable_sd_card(); // cs to high
-        
-        nano_wait(1500000); // wait for card to be fully powered
+    volatile uint32_t temp = SPI2 -> SR;
+    (void)temp;
+    SPI2 -> CR1 |= SPI_CR1_SPE;
+    disable_sd_card(); // cs to high
+    
+    nano_wait(1500000); // wait for card to be fully powered
 
-        // 80 dummy clock cycles
-        // intilizes our SD card to SPI
-        for(int i = 0; i < 10; i++) {
-            send_byte_s(0xff);
-        }
-
-        // SPI2 -> CR1 &= ~SPI_CR1_SPE;
-        // SPI2 -> CR1 |= 0x1 << 3;
-        // SPI2 -> CR1 &= ~(0x3 << 4);
-        // SPI2 -> CR1 |= SPI_CR1_SPE;
-
-        enable_sd_card(); // pull sd cs low
-        send_cmd_s(CMD0, 0, 0x95);
-        int r1 = wait_for_response(100);
-        disable_sd_card();
-
-        if (r1 == 0xff) {return 0;}
-
-        enable_sd_card();
-        send_cmd_s(CMD55, 0, 0x1);
-        r1 = wait_for_response(100);
-        if(r1 > 0x1) {return 0;}
-        disable_sd_card();
-
-        enable_sd_card();
-        send_cmd_s(CMD8, 0x1aa, 0x87);
-        r1 = wait_for_response(100);
-        wait_for_response(100);
-        wait_for_response(100);
-        int r7_1 = wait_for_response(100) & 0x01;
-        int r7_2 = wait_for_response(100) & 0xff;
-        int r7 = (r7_1 << 8) + r7_2;
-        disable_sd_card();
-        if(r7 != 0x1AA) {return 0;}
-        
-        while(r1 != 0x0) {
-            enable_sd_card();
-            send_cmd_s(CMD55, 0x40000000, 0x01);
-            r1 = wait_for_response(100);
-            send_cmd_s(CMD41, 0x40000000, 0x01);
-            r1 = wait_for_response(100);
-            disable_sd_card();
-        }   
-
-        if(r1 != 0x0) {return 0;}
-
-        enable_sd_card();
-        send_cmd_s(CMD58, 0x0, 0x1);
-        r1 = wait_for_response(100);
-        wait_for_response(100);
-        wait_for_response(100);
-        wait_for_response(100);
-        wait_for_response(100);
-        disable_sd_card();
-
-        if (r1 != 0x0) {return 0;}
-        return 1;
-    } else {
-        return 2;
+    // 80 dummy clock cycles
+    // intilizes our SD card to SPI
+    for(int i = 0; i < 10; i++) {
+        send_byte_s(0xff);
     }
+
+    enable_sd_card(); // pull sd cs low
+    send_cmd_s(CMD0, 0, 0x95);
+    int r1 = wait_for_response(100);
+    disable_sd_card();
+
+    if (r1 == 0xff) {return 0;}
+
+    enable_sd_card();
+    send_cmd_s(CMD55, 0, 0x1);
+    r1 = wait_for_response(100);
+    if(r1 > 0x1) {return 0;}
+    disable_sd_card();
+
+    enable_sd_card();
+    send_cmd_s(CMD8, 0x1aa, 0x87);
+    r1 = wait_for_response(100);
+    wait_for_response(100);
+    wait_for_response(100);
+    int r7_1 = wait_for_response(100) & 0x01;
+    int r7_2 = wait_for_response(100) & 0xff;
+    int r7 = (r7_1 << 8) + r7_2;
+    disable_sd_card();
+    if(r7 != 0x1AA) {return 0;}
+    
+    while(r1 != 0x0) {
+        enable_sd_card();
+        send_cmd_s(CMD55, 0x40000000, 0x01);
+        r1 = wait_for_response(100);
+        send_cmd_s(CMD41, 0x40000000, 0x01);
+        r1 = wait_for_response(100);
+        disable_sd_card();
+    }   
+
+    if(r1 != 0x0) {return 0;}
+
+    enable_sd_card();
+    send_cmd_s(CMD58, 0x0, 0x1);
+    r1 = wait_for_response(100);
+    wait_for_response(100);
+    wait_for_response(100);
+    wait_for_response(100);
+    wait_for_response(100);
+    disable_sd_card();
+
+    if (r1 != 0x0) {return 0;}
+    return 1;
 }
 
 // takes our game data and boolean value of playerOne and writes to SD card
 // returns 1 if successful
 // returns 0 if failed
-uint8_t write_game_data(uint8_t data[100], bool isPlayerOne) {
+uint8_t write_game_data(uint8_t data[100]) {
 
-    uint32_t address = 0;
-
-    if(isPlayerOne) {
-        address = 0x00000200;
-    } else {
-        address = 0x00000400;
-    }
-
+    uint32_t address = 0x00000200;
     uint8_t r1 = 0x0;
 
     enable_sd_card();
@@ -180,6 +163,7 @@ uint8_t write_game_data(uint8_t data[100], bool isPlayerOne) {
 
     while((SPI2->SR & SPI_SR_RXNE) == 1) {
         volatile uint8_t temp = *(volatile uint8_t *)&(SPI2->DR);
+        (void)temp;
     }
 
     return 1;
@@ -188,15 +172,9 @@ uint8_t write_game_data(uint8_t data[100], bool isPlayerOne) {
 // takes our game data and boolean value of playerOne and reads from SD card
 // returns 1 if successful
 // returns 0 if failed
-uint8_t read_game_data(uint8_t data[100], bool isPlayerOne) {
+uint8_t read_game_data(uint8_t data[100]) {
 
-    uint32_t address = 0;
-
-    if(isPlayerOne) {
-        address = 0x00000200;
-    } else {
-        address = 0x00000400;
-    }
+    uint32_t address = 0x00000200;
 
     uint8_t r1 = 0x0;
 
@@ -228,6 +206,7 @@ uint8_t read_game_data(uint8_t data[100], bool isPlayerOne) {
 
     while((SPI2->SR & SPI_SR_RXNE) == 1) {
         volatile uint8_t temp = *(volatile uint8_t *)&(SPI2->DR);
+        (void)temp;
     }
 
     return 1;
@@ -253,25 +232,23 @@ int test_SD() {
     }
 
     uint8_t read_data[100];
-
-    bool isPlayerOne = true;
     uint8_t response = 0;
 
-    response = sd_card_init_sequance(isPlayerOne);
+    response = sd_card_init_sequance();
 
     if(response != 1) {
         GPIOC -> ODR |= 0x1 << 8;
         return EXIT_FAILURE;
     }
 
-    response = write_game_data(game_data, isPlayerOne);
+    response = write_game_data(game_data);
 
     if(response != 1) {
         GPIOC -> ODR |= 0x1 << 9;
         return EXIT_FAILURE;
     }
 
-    response = read_game_data(read_data, isPlayerOne);
+    response = read_game_data(read_data);
 
     if(response != 1) {
         GPIOC -> ODR |= 0x1 << 9;
