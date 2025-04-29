@@ -2,7 +2,6 @@
 #include "spi.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 #define HIT 1
 #define MISS 2
@@ -44,6 +43,7 @@ void enable_slaveMode() {
 }
 
 void disable_slaveMode() {
+    while((GPIOA -> IDR & GPIO_IDR_7) == 0);
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
     SPI2 -> CR1 |= SPI_CR1_MSTR;
     SPI2 -> CR1 |= SPI_CR1_SPE;
@@ -137,7 +137,6 @@ uint8_t waiting(uint8_t game_data[100]) {
     while((SPI2->SR & SPI_SR_RXNE) == 0);
     response = *(volatile uint8_t *)&(SPI2->DR);
     while((SPI2->SR & SPI_SR_BSY) == SPI_SR_BSY);
-    nano_wait(10000);
     disable_slaveMode();
     if(response != 0xff) {
         return_value = 0;
@@ -218,16 +217,12 @@ void full_test(bool isPlayerOne) {
 
     game_data[31] = 0x04;
 
-    while( (SPI2 -> SR & SPI_SR_MODF) == 1) {
-        volatile uint32_t temp = SPI2 -> SR;
-        nano_wait(1000);
-    }
-
     if(isPlayerOne) {
-        nano_wait(10000000);
+        nano_wait(100000000);
         response = sd_card_init_sequance();
     } else {
         response = sd_card_init_sequance();
+        nano_wait(100000000);
     }
 
     if(response != 1) {

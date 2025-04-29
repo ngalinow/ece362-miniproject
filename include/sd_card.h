@@ -39,6 +39,6 @@ uint8_t sd_card_init_sequance();
 uint8_t write_game_data(uint8_t data[100]);
 uint8_t read_game_data(uint8_t data[100]);
 int test_SD();
-void full_test(bool isPlayerOne);
+
 
 #endif
