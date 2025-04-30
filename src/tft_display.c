@@ -15,7 +15,7 @@ int keys_collected = 0;
 int rowx = -1;
 int coly = -1;
 int keypad_counter = 0;
-int hit = 1; //1 means it was a hit and 0 means it was not a hit 
+int hit = 0; //1 means it was a hit and 0 means it was not a hit 
 
 
 char keypad_map[4][4] = {
@@ -64,7 +64,7 @@ void init_spi1_slow(void) {
 
  void init_lcd_spi() {
     RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
-    GPIOB -> MODER |= GPIO_MODER_MODER8_0 | GPIO_MODER_MODER11_0 | GPIO_MODER_MODER14_0;
+    GPIOB -> MODER |= GPIO_MODER_MODER8_0 | GPIO_MODER_MODER11_0 | GPIO_MODER_MODER10_0;
     init_spi1_slow();
     sdcard_io_high_speed();
  }
@@ -128,8 +128,8 @@ void setup_grid() {
 
 void enable_ports() {
     RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
-    GPIOC->MODER &= ~0xFF00;
-    GPIOC->MODER |=  0x5500;
+    GPIOC->MODER &= ~0xFFF00;
+    GPIOC->MODER |=  0x15500;
     GPIOC->MODER &= ~0xFF;
     GPIOC->PUPDR &= ~0xFF;
     GPIOC->PUPDR |=  0xAA;
@@ -163,8 +163,6 @@ void enable_ports() {
   }
 
   void handle_key(char key) {
-    // int row_picked;
-    // int col_picked;
     switch (key) {
       case '0':
         if(rowx>-1){
@@ -182,6 +180,7 @@ void enable_ports() {
         rowx = 0;
         coly = 0;
         keypad_counter =1;
+        GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '1':
       if(rowx>-1){
@@ -196,11 +195,8 @@ void enable_ports() {
       }
       rowx=1;
       nano_wait(1000000000);
-
-
-        // LCD_DrawLine(216, 32, 192, 64, 0xF800);
-        // LCD_DrawLine(192, 32, 216, 64, 0xF800);
         keypad_counter++;
+        GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '2':
       if(rowx>-1){
@@ -216,6 +212,7 @@ void enable_ports() {
       rowx=2;
       nano_wait(1000000000);
       keypad_counter++;
+      GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '3':
       if(rowx>-1){
@@ -231,6 +228,7 @@ void enable_ports() {
       rowx=3;
       nano_wait(1000000000);
       keypad_counter++;
+      GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '4':
       if(rowx>-1){
@@ -246,6 +244,7 @@ void enable_ports() {
       rowx=4;
       nano_wait(1000000000);
       keypad_counter++;
+      GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '5':
       if(rowx>-1){
@@ -261,6 +260,7 @@ void enable_ports() {
       rowx=5;
       nano_wait(1000000000);
       keypad_counter++;
+      GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '6':
       if(rowx>-1){
@@ -276,6 +276,7 @@ void enable_ports() {
       rowx=6;
       nano_wait(1000000000);
       keypad_counter++;
+      GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '7':
       if(rowx>-1){
@@ -291,6 +292,7 @@ void enable_ports() {
       rowx=7;
       nano_wait(1000000000);
       keypad_counter++;
+      GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '8':
       if(rowx>-1){
@@ -306,6 +308,7 @@ void enable_ports() {
       rowx=8;
       nano_wait(1000000000);
       keypad_counter++;
+      GPIOC -> ODR |= GPIO_ODR_8;
         break;
       case '9':
       if(rowx>-1){
@@ -321,6 +324,7 @@ void enable_ports() {
       rowx=9;
       nano_wait(1000000000);
       keypad_counter++;
+      GPIOC -> ODR |= GPIO_ODR_8;
         break;
        
     }
@@ -328,14 +332,8 @@ void enable_ports() {
       rowx = -1;
       coly =-1;
       keypad_counter = 0;
+      GPIOC -> ODR &= ~GPIO_ODR_8;
     }
-    
-    // Row_picked = key_buffer[1] - 48;
-    // col_picked = key_buffer[3] - 48; 
-
-  
-    // LCD_DrawLine(240-(24*Row_picked), (0+32*col_picked), (240-24*(Row_picked+1)), 32*(col_picked+1), 0xF800);
-    // LCD_DrawLine(240-(24*(Row_picked+1)), (0+32*(col_picked+1)), (240-24*(Row_picked)), 32*(col_picked+1), 0xF800);
   
     // if (key == 'A') {
     //   LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFFF);
