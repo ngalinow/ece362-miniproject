@@ -62,8 +62,6 @@ uint8_t wait_for_response(int length) {
 // returns 0 if it fails
 uint8_t sd_card_init_sequance() {
 
-    volatile uint32_t temp = SPI2 -> SR;
-    (void)temp;
     SPI2 -> CR1 |= SPI_CR1_SPE;
     disable_sd_card(); // cs to high
     
@@ -217,7 +215,7 @@ uint8_t read_game_data(uint8_t data[100]) {
 // yellow light on PC7 means data is different
 // lights on PC8 means sd initilization failed
 // lights on PC9 means read or write failed
-int test_SD() {
+void test_SD() {
     RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
     GPIOC -> MODER |= 0x55 << 12;
 
@@ -238,21 +236,21 @@ int test_SD() {
 
     if(response != 1) {
         GPIOC -> ODR |= 0x1 << 8;
-        return EXIT_FAILURE;
+        return;
     }
 
     response = write_game_data(game_data);
 
     if(response != 1) {
         GPIOC -> ODR |= 0x1 << 9;
-        return EXIT_FAILURE;
+        return;
     }
 
     response = read_game_data(read_data);
 
     if(response != 1) {
         GPIOC -> ODR |= 0x1 << 9;
-        return EXIT_FAILURE;
+        return;
     }
 
     response = 1;
@@ -266,9 +264,9 @@ int test_SD() {
 
     if(response != 1) {
         GPIOC -> ODR |= 0x1 << 7;
-        return EXIT_FAILURE;
     } else {
         GPIOC -> ODR |= 0x1 << 6;
-        return EXIT_SUCCESS;
     }
+
+    return;
 }
