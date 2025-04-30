@@ -93,27 +93,27 @@ void draw_grid() {
     }
 }
 
-void load_shots(uint8_t game_data){
-  for(int looper = 0; looper < 100; looper++) {
-    int shoot = game_data[looper] & 1;      // LSB checks if shot
-    int hit1 = (game_data[looper] >> 1) & 1;  // 2nd LSB checks if hit
+// void load_shots(uint8_t game_data){
+//   for(int looper = 0; looper < 100; looper++) {
+//     int shoot = game_data[looper] & 1;      // LSB checks if shot
+//     int hit1 = (game_data[looper] >> 1) & 1;  // 2nd LSB checks if hit
 
-    int coly1 = looper % 10;        // column 
-    int rowx1 = floor(looper / 10);   // row
+//     int coly1 = looper % 10;        // column 
+//     int rowx1 = floor(looper / 10);   // row
 
 
-    if(shoot == 0) {
-    }
-    else if(hit1 == 1){
-      LCD_DrawLine(240-(rowx*24), 32*coly1, 216-(rowx*24), 32*(coly1+1), 0xF800);
-      LCD_DrawLine(216-(rowx*24), 32*coly1, 240-(rowx*24), 32*(coly1+1), 0xF800);  
-    }
-    else if(hit1 == 0){
-      LCD_Circle(228-(rowx*24), 32*coly1 + 16, 10, 1, 0X7D7C);
-    }
-  }
+//     if(shoot == 0) {
+//     }
+//     else if(hit1 == 1){
+//       LCD_DrawLine(240-(rowx*24), 32*coly1, 216-(rowx*24), 32*(coly1+1), 0xF800);
+//       LCD_DrawLine(216-(rowx*24), 32*coly1, 240-(rowx*24), 32*(coly1+1), 0xF800);  
+//     }
+//     else if(hit1 == 0){
+//       LCD_Circle(228-(rowx*24), 32*coly1 + 16, 10, 1, 0X7D7C);
+//     }
+//   }
 
-}
+// }
 
 void setup_grid() {
     internal_clock();
@@ -122,7 +122,7 @@ void setup_grid() {
     setbuf(stderr,0);
     init_lcd_spi();
     draw_grid();
-    load_shots(game_data);
+    // load_shots(game_data);
 
 }
 
