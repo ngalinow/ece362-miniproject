@@ -2,6 +2,7 @@
 #include "spi.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "pwm.h"
 
 #define HIT 1
 #define MISS 2
@@ -76,10 +77,12 @@ void init_spi2_sd_stm32() {
     // PB14 miso
     // PB15 mosi
     GPIOB -> MODER |= 0xAA << 24; // sets pins 12-15 as alternate function
-    GPIOB -> MODER |= 0x5 << 2; // PB2 and PB3 set to output for CS
+    GPIOB -> MODER |= 0x5 << 2; // PB1 and PB2 set to output for CS
     GPIOA -> MODER |= 0x1 << 12;
+    GPIOA -> MODER &= ~(0x3 << 14);
     GPIOB -> ODR |= 0x3 << 1;
     GPIOA -> ODR |= 0x1 << 6;
+    color_state(4);
     while( (GPIOA -> IDR & GPIO_IDR_7) == 0);
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
     SPI2 -> CR2 |= 0x1 << 5;    
@@ -91,6 +94,7 @@ void init_spi2_sd_stm32() {
     SPI2 -> CR2 |= 0x7 << 8; // sets data to 8 bits (1 byte per transaction)
     SPI2 -> CR2 |= SPI_CR2_FRXTH; // lets us know we have our byte ready to read (one byte)
     SPI2 -> CR1 |= SPI_CR1_SPE;
+    color_state(1);
 }
 
 // function that will be used to send a hit command to the other player
@@ -144,9 +148,11 @@ uint8_t waiting(uint8_t game_data[100]) {
     return return_value;
 }
 
-int test_stmComm_sendHit() {
+void test_stmComm_sendHit() {
     RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
     GPIOC -> MODER |= 0x55 << 12;
+
+    color_state(2);
 
     uint8_t response = 0;
     response = send_hit((uint8_t) 32);
@@ -157,7 +163,7 @@ int test_stmComm_sendHit() {
         GPIOC -> ODR |= 0x1 << 8;
     }
 
-    nano_wait(100000);
+    nano_wait(10000000);
 
     response = 0;
     response = send_hit((uint8_t) 28);
@@ -171,10 +177,10 @@ int test_stmComm_sendHit() {
     return EXIT_SUCCESS;
 }
 
-int test_stmComm_waiting() {
+void test_stmComm_waiting() {
     RCC -> AHBENR |= RCC_AHBENR_GPIOCEN;
     GPIOC -> MODER |= 0x55 << 12;
-
+    color_state(3);
     uint8_t game_data[100];
     uint8_t response = 0;
 
@@ -201,7 +207,7 @@ int test_stmComm_waiting() {
         GPIOC -> ODR |= 0x1 << 9;
     }
 
-    return EXIT_SUCCESS;
+    return;
 }
 
 void full_test(bool isPlayerOne) {
