@@ -87,10 +87,10 @@ void load_shots(uint8_t game_data) {
 
     if (shoot == 1) {
       if (hit1 == 1) {
-        LCD_DrawLine(240 -(rowx * 24), 32 * coly1, 216 - (rowx * 24), 32 * (coly1 + 1), 0xF800);
-        LCD_DrawLine(216 -(rowx * 24), 32 * coly1, 240 - (rowx * 24), 32 * (coly1 + 1), 0xF800);
+        LCD_DrawLine(240 -(rowx1 * 24), 32 * coly1, 216 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
+        LCD_DrawLine(216 -(rowx1 * 24), 32 * coly1, 240 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
       } else if(hit1 == 0) {
-        LCD_Circle(228 - (rowx * 24), 32 * coly1 + 16, 10, 1, 0X7D7C);
+        LCD_Circle(228 - (rowx1 * 24), 32 * coly1 + 16, 10, 1, 0X7D7C);
       }
     }
   }
@@ -159,9 +159,7 @@ void handle_key(char key) {
     }
     rowx = 0;
     nano_wait(1000000000);
-    rowx = 0;
-    coly = 0;
-    keypad_counter = 1;
+    keypad_counter++;
     GPIOC->ODR |= GPIO_ODR_8;
     break;
   case '1':
