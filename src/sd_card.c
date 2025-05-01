@@ -65,7 +65,7 @@ uint8_t sd_card_init_sequance() {
     SPI2 -> CR1 |= SPI_CR1_SPE;
     disable_sd_card(); // cs to high
     
-    nano_wait(1500000); // wait for card to be fully powered
+    nano_wait(1500000000); // wait for card to be fully powered
 
     // 80 dummy clock cycles
     // intilizes our SD card to SPI
@@ -96,15 +96,15 @@ uint8_t sd_card_init_sequance() {
     int r7 = (r7_1 << 8) + r7_2;
     disable_sd_card();
     if(r7 != 0x1AA) {return 0;}
-    
-    while(r1 != 0x0) {
-        enable_sd_card();
-        send_cmd_s(CMD55, 0x40000000, 0x01);
+
+    enable_sd_card();
+    while(r1 != 0x0) {  
+        send_cmd_s(CMD55, 0x00000000, 0x01);
         r1 = wait_for_response(100);
         send_cmd_s(CMD41, 0x40000000, 0x01);
         r1 = wait_for_response(100);
-        disable_sd_card();
     }   
+    disable_sd_card();
 
     if(r1 != 0x0) {return 0;}
 
