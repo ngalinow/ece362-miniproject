@@ -61,11 +61,10 @@ uint8_t wait_for_response(int length) {
 // returns 1 if successful
 // returns 0 if it fails
 uint8_t sd_card_init_sequance() {
-
-    SPI2 -> CR1 |= SPI_CR1_SPE;
+    
     disable_sd_card(); // cs to high
     
-    nano_wait(1500000000); // wait for card to be fully powered
+    nano_wait(150000000); // wait for card to be fully powered
 
     // 80 dummy clock cycles
     // intilizes our SD card to SPI
@@ -73,42 +72,43 @@ uint8_t sd_card_init_sequance() {
         send_byte_s(0xff);
     }
 
+    // SPI2 -> CR1 &= ~SPI_CR1_SPE;
+    // SPI2 -> CR1 |= 0x1 << 3;
+    // SPI2 -> CR1 &= (0x3 << 4);
+    // SPI2 -> CR1 |= SPI_CR1_SPE;
+
     enable_sd_card(); // pull sd cs low
     send_cmd_s(CMD0, 0, 0x95);
     int r1 = wait_for_response(100);
-    disable_sd_card();
 
     if (r1 == 0xff) {return 0;}
 
-    enable_sd_card();
     send_cmd_s(CMD55, 0, 0x1);
     r1 = wait_for_response(100);
     if(r1 > 0x1) {return 0;}
-    disable_sd_card();
 
-    enable_sd_card();
     send_cmd_s(CMD8, 0x1aa, 0x87);
     r1 = wait_for_response(100);
-    wait_for_response(100);
-    wait_for_response(100);
-    int r7_1 = wait_for_response(100) & 0x01;
-    int r7_2 = wait_for_response(100) & 0xff;
-    int r7 = (r7_1 << 8) + r7_2;
-    disable_sd_card();
-    if(r7 != 0x1AA) {return 0;}
+    uint8_t r7[4];
+    for (int i = 0; i < 4; i++) {
+        r7[i] = send_byte_s(0xFF);
+    
+    }
 
-    enable_sd_card();
+    if(r7[2] != 0x01 || r7[3] != 0xAA) {
+        return 0;
+    }
+
     while(r1 != 0x0) {  
         send_cmd_s(CMD55, 0x00000000, 0x01);
         r1 = wait_for_response(100);
         send_cmd_s(CMD41, 0x40000000, 0x01);
         r1 = wait_for_response(100);
     }   
-    disable_sd_card();
+
 
     if(r1 != 0x0) {return 0;}
 
-    enable_sd_card();
     send_cmd_s(CMD58, 0x0, 0x1);
     r1 = wait_for_response(100);
     wait_for_response(100);
