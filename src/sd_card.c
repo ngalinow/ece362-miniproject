@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sd_card.h"
-#include "spi.h"
 #include "stm32f0xx.h"
 #include <stdbool.h>
 
@@ -61,7 +60,7 @@ uint8_t wait_for_response(int length) {
 // returns 1 if successful
 // returns 0 if it fails
 uint8_t sd_card_init_sequance() {
-    
+
     disable_sd_card(); // cs to high
     
     nano_wait(150000000); // wait for card to be fully powered

@@ -1,5 +1,4 @@
 #include "stm32f0xx.h"
-#include "spi.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "pwm.h"

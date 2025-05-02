@@ -13,6 +13,7 @@ int read_rows(void);
 char rows_to_key(int rows);
 void handle_key(char key);
 void setup_tim7();
+void wipe_board();
 
 #endif
 

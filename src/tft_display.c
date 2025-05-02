@@ -6,11 +6,13 @@
 #include "tty.h"
 #include "lcd.h"
 #include "tft_display.h"
+#include "sd_card.h"
 
 int rowx = -1;          // variable used to calculate the row (first number pressed on keypad)
 int coly = -1;          // variable used to calculate the col (second number pressed on keypad)
 int keypad_counter = 0; // counts how many keys have been pressed (resets back to 0 after two keys are pressed)
 int hit = 1;            // 1 = X's are enabled (hit), 0 = O's are enabled (miss)
+int coords = 0;
 
 char keypad_map[4][4] = {
     {'1', '2', '3', 'A'},
@@ -62,6 +64,11 @@ int __io_putchar(int c) {
   while (!(USART5->ISR & USART_ISR_TXE));
   USART5->TDR = c;
   return c;
+}
+
+void wipe_board() {
+  LCD_DrawFillRectangle(0, 0, 240, 320, 0xFFFF);
+  draw_grid();
 }
 
 void draw_grid() {
@@ -308,6 +315,7 @@ void handle_key(char key) {
     break;
   }
   if (keypad_counter > 1) {
+    int coords = rowx + coly * 10;
     rowx = -1;
     coly = -1;
     keypad_counter = 0;
