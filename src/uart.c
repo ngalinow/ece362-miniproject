@@ -4,6 +4,14 @@
 
 extern void nano_wait(unsigned int n);
 
+void clear_uart_buffer() {
+    while (USART5->ISR & USART_ISR_RXNE) {
+      // Read the data to clear the buffer
+      volatile char temp = USART5->RDR;
+      (void)temp;  // Just read to clear the buffer
+    }
+  }
+
 void init_uart() {
     RCC -> AHBENR |= RCC_AHBENR_GPIOAEN;
     RCC -> APB1ENR |= RCC_APB1ENR_USART2EN;
@@ -16,7 +24,7 @@ void init_uart() {
     USART2 -> CR2 &= ~(0x3 << 12);
     USART2 -> CR1 &= ~(0x1 << 10);
     USART2 -> CR1 &= ~(0x1 << 15);
-    USART2 -> BRR = 500;
+    USART2 -> BRR = 20000;
     USART2 -> CR1 |= USART_CR1_TE;
     USART2 -> CR1 |= USART_CR1_RE;
     USART2 -> CR1 |= USART_CR1_UE;
@@ -28,6 +36,7 @@ void init_uart() {
 // takes in game data and the number of ships remaining
 // returns 1 if hit, 2 if missed, 3 if all ships are sunk
 uint8_t waiting(uint8_t data[100], int ships_left) {
+    clear_uart_buffer();
     volatile uint8_t received;
     volatile uint8_t location;
     volatile uint8_t send;
@@ -53,6 +62,7 @@ uint8_t waiting(uint8_t data[100], int ships_left) {
 // takes in the game data and coords to the location
 // returns 1 if hit, 2 if missed, 3 if sunk all ships
 uint8_t send_hit(uint8_t data[100], uint8_t coords) {
+    clear_uart_buffer();
     while(!(USART2->ISR & USART_ISR_TXE));
     USART2->TDR=coords;
     while(!(USART2->ISR & USART_ISR_TC));

@@ -405,35 +405,36 @@ void handle_key(char key) {
     keypad_counter++;
     GPIOC->ODR |= GPIO_ODR_8;
     break;
-  case '#':
-    // Where i = rows and j = columns
+    case '#':
     if(game_state == 1) {
-      TIM7 -> CR1 &= ~TIM_CR1_CEN;
-      ships_placed = 0;
-      read_game_data(game_data);
-      for(int i = 0; i < 10; i++) {
-        for(int j = 0; j < 10; j++) {
-          int shoot = ((game_data[i + j] & 0x1) == 0x1);        // LSB checks if shot
-          int hit1 = ((game_data[i + j]) & 0x2 == 0x2);  // 2nd LSB checks if hit
+        TIM7->CR1 &= ~TIM_CR1_CEN;
+        ships_placed = 0;
+        read_game_data(game_data);
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < 10; j++) {
+                int index = i * 10 + j;
+                int shoot = (game_data[index] & 0x1);
+                int hit1 = (game_data[index] & 0x2);
 
-          int coly1 = j;          // column
-          int rowx1 = i;          // row
+                int coly1 = i;
+                int rowx1 = j;
 
-          if (shoot == 1) {
-            if (hit1 == 1) {
-              LCD_DrawLine(240 - (rowx1 * 24), 32 * coly1, 216 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
-              LCD_DrawLine(216 - (rowx1 * 24), 32 * coly1, 240 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
-            } else if(hit1 == 0) {
-              LCD_Circle(228 - (rowx1 * 24), 32 * coly1 + 16, 10, 1, 0X7D7C);
+                if (shoot) {
+                    if (hit1) {
+                        LCD_DrawLine(240 - (rowx1 * 24), 32 * coly1, 216 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
+                        LCD_DrawLine(216 - (rowx1 * 24), 32 * coly1, 240 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
+                    } else {
+                        LCD_Circle(228 - (rowx1 * 24), 32 * coly1 + 16, 10, 1, 0x7D7C);
+                    }
+                }
+
+                if ((game_data[index] & 0xC) == 0x4) {
+                    ships_placed++;
+                }
             }
-          }
-
-          if( (game_data[i+j] & 0xC) == 0x4) {
-            ships_placed += 1;
-          }
         }
-      }
-      game_state = 5;
+        game_state = 5;
+        TIM7->CR1 |= TIM_CR1_CEN;
     }
     break;
 }
