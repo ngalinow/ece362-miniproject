@@ -91,7 +91,7 @@ void test(int isPlayerOne) {
         response = waiting(game_data, 3);
     }
 
-    if (response = 0x1) {
+    if (response == 0x1) {
         GPIOC -> ODR |= GPIO_ODR_6;
     } else {
         GPIOC -> ODR |= GPIO_ODR_7;
@@ -106,7 +106,7 @@ void test(int isPlayerOne) {
         response = send_hit(game_data, 24);
     }
 
-    if(response = 0x1) {
+    if(response == 0x1) {
         GPIOC -> ODR |= GPIO_ODR_8;
     } else {
         GPIOC -> ODR |= GPIO_ODR_9;

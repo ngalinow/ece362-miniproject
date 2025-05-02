@@ -20,9 +20,6 @@ void init_spi2_sd_stm32() {
     GPIOA -> MODER |= 0x1 << 12;
     GPIOA -> MODER &= ~(0x3 << 14);
     GPIOB -> ODR |= 0x3 << 1;
-    GPIOA -> ODR |= 0x1 << 6;
-    color_state(4);
-    while( (GPIOA -> IDR & GPIO_IDR_7) == 0);
     SPI2 -> CR1 &= ~SPI_CR1_SPE;
     SPI2 -> CR1 |= SPI_CR1_MSTR; // master mode configuration
     SPI2 -> CR1 &= ~SPI_CR1_CPOL; 
@@ -31,6 +28,7 @@ void init_spi2_sd_stm32() {
     SPI2 -> CR2 |= 0x7 << 8; // sets data to 8 bits (1 byte per transaction)
     SPI2 -> CR2 |= SPI_CR2_FRXTH; // lets us know we have our byte ready to read (one byte)
     SPI2 -> CR1 |= SPI_CR1_SPE;
+    GPIOA -> ODR &= ~GPIO_ODR_6;
     color_state(1);
 }
 

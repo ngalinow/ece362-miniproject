@@ -158,12 +158,14 @@ void handle_key(char key) {
   case '0':
     if (rowx > -1) {
       coly = 0;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -181,12 +183,14 @@ void handle_key(char key) {
   case '1':
     if (rowx > -1) {
       coly = 1;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -204,12 +208,14 @@ void handle_key(char key) {
   case '2':
     if (rowx > -1) {
       coly = 2;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -227,12 +233,14 @@ void handle_key(char key) {
   case '3':
     if (rowx > -1) {
       coly = 3;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -250,12 +258,14 @@ void handle_key(char key) {
   case '4':
     if (rowx > -1) {
       coly = 4;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -273,12 +283,14 @@ void handle_key(char key) {
   case '5':
     if (rowx > -1) {
       coly = 5;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -296,12 +308,14 @@ void handle_key(char key) {
   case '6':
     if (rowx > -1) {
       coly = 6;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -319,12 +333,14 @@ void handle_key(char key) {
   case '7':
     if (rowx > -1) {
       coly = 7;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -342,12 +358,14 @@ void handle_key(char key) {
   case '8':
     if (rowx > -1) {
       coly = 8;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -365,12 +383,14 @@ void handle_key(char key) {
   case '9':
     if (rowx > -1) {
       coly = 9;
+      int coords = rowx + (coly * 10) + 1;
       if(game_state != 1) {
-        int coords = rowx + (coly * 10) + 1;
         response = send_hit(game_data, coords);
         hit = response & 0x1;
       } else {
         hit = 0;
+        ships_placed += 1;
+        game_data[coords-1] |= 0x04;
       }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -388,10 +408,6 @@ void handle_key(char key) {
   }
 
   if (keypad_counter > 1) {
-    if(game_state == 1) {
-      ships_placed += 1;
-      game_data[coords-1] |= 0x04;
-    }
     rowx = -1;
     coly = -1;
     keypad_counter = 0;

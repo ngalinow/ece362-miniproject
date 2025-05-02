@@ -9,7 +9,7 @@ extern void nano_wait(unsigned int n);
 extern void internal_clock();
 
 extern int ships_placed = 0;
-int isPlayerOne = 0;
+int isPlayerOne = 1;
 int ship_count = 5;
 uint8_t coords = 0xFF;
 uint8_t game_state = 1;
@@ -44,21 +44,25 @@ void game_flow() {
             while(ships_placed < ship_count);
             color_state(2);
             GPIOA -> ODR |= GPIO_ODR_6;
+            TIM7 -> CR1 &= ~TIM_CR1_CEN;
+            wipe_board();
             while( (GPIOA -> IDR & GPIO_IDR_7) == 0);
-
             if(isPlayerOne) {
                 game_data[0] |= 0xF0;
                 game_state = 2;
+                response = 0xFF;
+                color_state(2);
             } else {
                 game_data[0] &= ~0xF0;
                 game_state = 3;
+                color_state(3);
             }
-
-            wipe_board();
+            init_uart();
             break;
 
         case 2:
             TIM7 -> CR1 |= TIM_CR1_CEN;
+            while(response == 0xFF);
             if(response == 3) {
                 game_state = 4;
                 color_state(2);
@@ -68,17 +72,15 @@ void game_flow() {
                 color_state(3);
             }
             break;
-        
 
         case 3:
-
             TIM7 -> CR1 &= ~TIM_CR1_CEN;
             response = waiting(game_data, ships_placed);
             if(response == 1) {
                 ships_placed -= 1;
-            }
-
-            if(response == 3) {
+                game_state = 2;
+                color_state(2);
+            } else if (response == 3) {
                 game_state = 4;
                 color_state(4);
             } else {
@@ -87,11 +89,11 @@ void game_flow() {
             }
 
             response = 0xFF;
-
+            break;
         case 4:
             
             while(1);
-
+            break;
         }
 
     }
