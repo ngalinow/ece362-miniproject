@@ -86,24 +86,24 @@ void draw_grid() {
   }
 }
 
-void load_shots(uint8_t game_data) {
-  for(int looper = 0; looper < 100; looper++) {
-    int shoot = game_data[(int*)looper] & 1;        // LSB checks if shot
-    int hit1 = (game_data[(int*)looper] >> 1) & 1;  // 2nd LSB checks if hit
+// void load_shots(uint8_t game_data) {
+//   for(int looper = 0; looper < 100; looper++) {
+//     int shoot = game_data[(int*)looper] & 1;        // LSB checks if shot
+//     int hit1 = (game_data[(int*)looper] >> 1) & 1;  // 2nd LSB checks if hit
 
-    int coly1 = looper % 10;          // column
-    int rowx1 = floor(looper / 10);   // row
+//     int coly1 = looper % 10;          // column
+//     int rowx1 = floor(looper / 10);   // row
 
-    if (shoot == 1) {
-      if (hit1 == 1) {
-        LCD_DrawLine(240 -(rowx1 * 24), 32 * coly1, 216 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
-        LCD_DrawLine(216 -(rowx1 * 24), 32 * coly1, 240 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
-      } else if(hit1 == 0) {
-        LCD_Circle(228 - (rowx1 * 24), 32 * coly1 + 16, 10, 1, 0X7D7C);
-      }
-    }
-  }
-}
+//     if (shoot == 1) {
+//       if (hit1 == 1) {
+//         LCD_DrawLine(240 -(rowx1 * 24), 32 * coly1, 216 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
+//         LCD_DrawLine(216 -(rowx1 * 24), 32 * coly1, 240 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
+//       } else if(hit1 == 0) {
+//         LCD_Circle(228 - (rowx1 * 24), 32 * coly1 + 16, 10, 1, 0X7D7C);
+//       }
+//     }
+//   }
+// }
 
 void setup_grid() {
   internal_clock();
@@ -405,7 +405,38 @@ void handle_key(char key) {
     keypad_counter++;
     GPIOC->ODR |= GPIO_ODR_8;
     break;
-  }
+  case '#':
+    // Where i = rows and j = columns
+    if(game_state == 1) {
+      TIM7 -> CR1 &= ~TIM_CR1_CEN;
+      ships_placed = 0;
+      read_game_data(game_data);
+      for(int i = 0; i < 10; i++) {
+        for(int j = 0; j < 10; j++) {
+          int shoot = ((game_data[i + j] & 0x1) == 0x1);        // LSB checks if shot
+          int hit1 = ((game_data[i + j]) & 0x2 == 0x2);  // 2nd LSB checks if hit
+
+          int coly1 = j;          // column
+          int rowx1 = i;          // row
+
+          if (shoot == 1) {
+            if (hit1 == 1) {
+              LCD_DrawLine(240 - (rowx1 * 24), 32 * coly1, 216 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
+              LCD_DrawLine(216 - (rowx1 * 24), 32 * coly1, 240 - (rowx1 * 24), 32 * (coly1 + 1), 0xF800);
+            } else if(hit1 == 0) {
+              LCD_Circle(228 - (rowx1 * 24), 32 * coly1 + 16, 10, 1, 0X7D7C);
+            }
+          }
+
+          if( (game_data[i+j] & 0xC) == 0x4) {
+            ships_placed += 1;
+          }
+        }
+      }
+      game_state = 5;
+    }
+    break;
+}
 
   if (keypad_counter > 1) {
     rowx = -1;
