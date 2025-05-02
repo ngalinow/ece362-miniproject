@@ -1,7 +1,11 @@
 {
     "files.associations": {
         "stm32f0xx.h": "c",
+<<<<<<< HEAD
         "stdbool.h": "c",
         "stdint.h": "c"
+=======
+        "diskio.h": "c"
+>>>>>>> TFT_Display
     }
 }
