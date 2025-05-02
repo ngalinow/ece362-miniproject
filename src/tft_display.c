@@ -7,12 +7,14 @@
 #include "lcd.h"
 #include "tft_display.h"
 #include "sd_card.h"
+#include "gameflow.h"
+#include "uart.h"
 
 int rowx = -1;          // variable used to calculate the row (first number pressed on keypad)
 int coly = -1;          // variable used to calculate the col (second number pressed on keypad)
 int keypad_counter = 0; // counts how many keys have been pressed (resets back to 0 after two keys are pressed)
-int hit = 1;            // 1 = X's are enabled (hit), 0 = O's are enabled (miss)
-int coords = 0;
+           // 1 = X's are enabled (hit), 0 = O's are enabled (miss)
+extern int ships_placed;
 
 char keypad_map[4][4] = {
     {'1', '2', '3', 'A'},
@@ -156,6 +158,13 @@ void handle_key(char key) {
   case '0':
     if (rowx > -1) {
       coly = 0;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -172,6 +181,13 @@ void handle_key(char key) {
   case '1':
     if (rowx > -1) {
       coly = 1;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -188,6 +204,13 @@ void handle_key(char key) {
   case '2':
     if (rowx > -1) {
       coly = 2;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -204,6 +227,13 @@ void handle_key(char key) {
   case '3':
     if (rowx > -1) {
       coly = 3;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -220,6 +250,13 @@ void handle_key(char key) {
   case '4':
     if (rowx > -1) {
       coly = 4;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -236,6 +273,13 @@ void handle_key(char key) {
   case '5':
     if (rowx > -1) {
       coly = 5;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -252,6 +296,13 @@ void handle_key(char key) {
   case '6':
     if (rowx > -1) {
       coly = 6;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -268,6 +319,13 @@ void handle_key(char key) {
   case '7':
     if (rowx > -1) {
       coly = 7;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -284,6 +342,13 @@ void handle_key(char key) {
   case '8':
     if (rowx > -1) {
       coly = 8;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -300,6 +365,13 @@ void handle_key(char key) {
   case '9':
     if (rowx > -1) {
       coly = 9;
+      if(game_state != 1) {
+        int coords = rowx + (coly * 10) + 1;
+        response = send_hit(game_data, coords);
+        hit = response & 0x1;
+      } else {
+        hit = 0;
+      }
       if (hit > 0) {
         LCD_DrawLine(240 - (rowx * 24), 32 * coly, 216 - (rowx * 24), 32 * (coly + 1), 0xF800);
         LCD_DrawLine(216 - (rowx * 24), 32 * coly, 240 - (rowx * 24), 32 * (coly + 1), 0xF800);
@@ -314,8 +386,12 @@ void handle_key(char key) {
     GPIOC->ODR |= GPIO_ODR_8;
     break;
   }
+
   if (keypad_counter > 1) {
-    int coords = rowx + coly * 10;
+    if(game_state == 1) {
+      ships_placed += 1;
+      game_data[coords-1] |= 0x04;
+    }
     rowx = -1;
     coly = -1;
     keypad_counter = 0;
